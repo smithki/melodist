@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "lib": ["esnext"],
+    "jsx": "react",
+    "declaration": false,
+    "sourceMap": false,
+    "downlevelIteration": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+  },
+
+  "include": [
+    "**/*.ts",
+    ".eslintrc.js",
+    "bin.js",
+  ],
+
+  "exclude": [
+    "node_modules",
+    "dist",
+  ],
+
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true,
+    "compilerOptions": {
+      "module": "commonjs",
+    }
+  },
+}
