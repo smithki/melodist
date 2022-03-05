@@ -50,6 +50,7 @@ export function printHelp(options: { command: string; flags: Flags; examples: st
   );
 
   // Print it out!
+  console.log();
   console.log(helpSections.join('\n\n'));
 }
 

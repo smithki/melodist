@@ -14,7 +14,7 @@ async function getKnownCommands() {
 }
 
 (async () => {
-  const [cmd, input] = process.argv.slice(2);
+  const [cmd, ...input] = process.argv.slice(2);
   const knownCommands = await getKnownCommands();
   const knownCommandsStyled = knownCommands.map((c) => chalk`{cyan ${c}}`).join(', ');
 
@@ -46,7 +46,7 @@ async function getKnownCommands() {
     });
   }
 
-  await require(resolveToDist(`./commands/${cmd}.js`)).default(input ?? '');
+  await require(resolveToDist(`./commands/${cmd}.js`)).default(input.length ? input.join(' ') : '');
 })().catch((err) => {
   printError(err);
   process.exit(1);

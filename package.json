@@ -16,6 +16,9 @@
     "test": "echo \"No unit tests... yet :(\" && exit 0",
     "test:tree-shaking": "npm run build && agadoo"
   },
+  "dependencies": {
+    "esbuild": "~0.14.25"
+  },
   "devDependencies": {
     "@ikscodes/eslint-config": "~7.0.2",
     "@ikscodes/prettier-config": "~2.0.2",
@@ -26,7 +29,6 @@
     "agadoo": "~2.0.0",
     "chalk": "~4.1.0",
     "decamelize": "~6.0.0",
-    "esbuild": "~0.14.25",
     "eslint": "~7.32.0",
     "eslint-import-resolver-typescript": "~2.5.0",
     "eslint-plugin-import": "~2.25.4",
