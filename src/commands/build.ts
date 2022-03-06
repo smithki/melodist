@@ -86,7 +86,6 @@ export default createCommand({
   flags,
   examples: [],
   executor: async (data) => {
-    console.log(data);
     await build({ data });
   },
 });
