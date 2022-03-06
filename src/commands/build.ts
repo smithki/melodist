@@ -1,6 +1,6 @@
 import type { Format } from 'esbuild';
+import type { Flags } from '../cli/flags';
 import { createCommand } from '../cli/create-command';
-import { Flags } from '../cli/flags';
 import { bundle, getDefaultExternals } from '../utils/esbuild';
 
 export interface BuildOptions {
