@@ -7,6 +7,7 @@ import fs from 'fs';
 import { createError, printError } from './utils/errors-warnings';
 import { getVersion } from './utils/get-version';
 import { resolveToDist } from './utils/path-helpers';
+import { useGracefulShutdown } from './utils/shutdown';
 
 async function getKnownCommands() {
   const commands = await fs.promises.readdir(resolveToDist('./commands'));
@@ -14,6 +15,8 @@ async function getKnownCommands() {
 }
 
 (async () => {
+  useGracefulShutdown();
+
   const [cmd, ...input] = process.argv.slice(2);
   const knownCommands = await getKnownCommands();
   const knownCommandsStyled = knownCommands.map((c) => chalk`{cyan ${c}}`).join(', ');
