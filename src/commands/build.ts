@@ -1,7 +1,7 @@
 import type { Format } from 'esbuild';
 import { createCommand } from '../cli/create-command';
 import { Flags } from '../cli/flags';
-import { build, getDefaultExternals } from '../utils/esbuild';
+import { bundle, getDefaultExternals } from '../utils/esbuild';
 
 export interface BuildOptions {
   src: string;
@@ -9,7 +9,8 @@ export interface BuildOptions {
   output: Format[];
   platform: 'browser' | 'node' | 'neutral';
   external: string[];
-  globals: string[];
+  global: string[];
+  define: string[];
   name?: string;
   sourcemap?: boolean;
   [key: string]: any;
@@ -54,10 +55,17 @@ export const flags: Flags<BuildOptions> = {
     defaultDescriptor: 'inferred from `package.json#dependencies` and `package.json#peerDependencies`',
   },
 
-  globals: {
+  global: {
     type: [String],
     description: '',
     alias: 'g',
+    default: [],
+  },
+
+  define: {
+    type: [String],
+    description: '',
+    alias: 'd',
     default: [],
   },
 
@@ -78,16 +86,17 @@ export default createCommand({
   flags,
   examples: [],
   executor: async (data) => {
-    await buildFromOptions({ data });
+    console.log(data);
+    await build({ data });
   },
 });
 
-export async function buildFromOptions(options: { data: BuildOptions; watch?: boolean }) {
+export async function build(options: { data: BuildOptions; watch?: boolean }) {
   const { data, watch } = options;
 
   await Promise.all(
     data.output.map((output, i) => {
-      return build({
+      return bundle({
         // Special options
         watch,
         printMeta: i === 0,
@@ -98,7 +107,8 @@ export async function buildFromOptions(options: { data: BuildOptions; watch?: bo
         platform: data.platform,
         external: data.external,
         format: output,
-        globals: data.globals,
+        global: data.global,
+        define: data.define,
         name: data.name,
         sourcemap: data.sourcemap,
       });

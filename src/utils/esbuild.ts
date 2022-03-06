@@ -10,25 +10,31 @@ import { checkFileExists } from './check-file-exists';
 interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'format' | 'sourcemap'> {
   src: string;
   outdir: string;
-  globals: string[];
+  global: string[];
+  define: string[];
   name?: string;
   watch?: boolean;
   printMeta?: boolean;
 }
 
-export async function build(options: BuildOptions) {
-  const { src, outdir, globals, name, watch, printMeta, ...rest } = options;
+/**
+ * Bundle with ESBuild.
+ */
+export async function bundle(options: BuildOptions) {
+  const { src, outdir, global, define, name, watch, printMeta, ...rest } = options;
 
   // Bundle with ESBuild
   await esbuild.build({
     ...rest,
-    outfile: await getOutfile(options),
     bundle: true,
-    entryPoints: [await getEntrypoint(options)],
-    minify: !watch,
     target: 'es6',
-    platform: 'node',
-    plugins: [...globalsPlugin(Object.fromEntries(globals.map((global) => global.split(':'))) || {})],
+    minify: !watch,
+    outfile: await getOutfile(options),
+    entryPoints: [await getEntrypoint(options)],
+    plugins: [...globalsPlugin(Object.fromEntries(global.map((g) => g.split('='))) || {})],
+    define: Object.fromEntries(
+      define.map((d) => d.split('=')).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
+    ),
     watch: watch ? { onRebuild: onRebuildFactory(options) } : undefined,
 
     // We need this footer because: https://github.com/evanw/esbuild/issues/1182
@@ -65,29 +71,21 @@ function onRebuildFactory(options: BuildOptions) {
   };
 }
 
+/**
+ * Copy ESM bundle to `.mjs` file.
+ */
 async function createESMCompatBundle(options: BuildOptions) {
   const outfile = await getOutfile(options);
   if (outfile.endsWith('cjs')) {
-    await Promise.all([
-      fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.js')),
-      checkFileExists(`${outfile}.map`).then((doesExist) => {
-        if (doesExist) {
-          return fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.js.map'));
-        }
-      }),
-    ]);
+    await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.js'));
   } else {
-    await Promise.all([
-      fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.mjs')),
-      checkFileExists(`${outfile}.map`).then((doesExist) => {
-        if (doesExist) {
-          return fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.mjs.map'));
-        }
-      }),
-    ]);
+    await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.mjs'));
   }
 }
 
+/**
+ * Infer default bundle externals based on the consumer `package.json`.
+ */
 export async function getDefaultExternals(): Promise<string[]> {
   const pkgJson = await getPackageJson();
   const dependencies = Object.keys(pkgJson.dependencies || []);
@@ -95,6 +93,10 @@ export async function getDefaultExternals(): Promise<string[]> {
   return [...dependencies, ...peerDependencies];
 }
 
+/**
+ * Parse the `package.json` file for the consumer
+ * package (relative to `process.cwd()`).
+ */
 async function getPackageJson() {
   return JSON.parse((await fs.promises.readFile(path.resolve(process.cwd(), 'package.json'))).toString('utf-8'));
 }
@@ -114,6 +116,9 @@ async function getEntrypoint(options: BuildOptions) {
   return findEntrypoint(options.format);
 }
 
+/**
+ * Get a formatted, destination outfile.
+ */
 async function getOutfile(options: BuildOptions) {
   const ext = (await getPackageJson()).type === 'module' ? 'cjs' : 'js';
   return path.join(process.cwd(), options.outdir, options.format!, `index.${ext}`);
