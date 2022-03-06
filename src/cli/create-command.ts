@@ -1,10 +1,7 @@
-import fs from 'fs';
 import chalk from 'chalk';
 import { printHelp } from './help-text';
-import { resolveToRoot } from '../utils/path-helpers';
 import { parseFlags, Flags, TypedFlags } from './flags';
 import { BINARY } from '../constants';
-import { printError } from '../utils/errors-warnings';
 import { getVersion } from '../utils/get-version';
 
 interface GlobalOptions {
@@ -60,6 +57,12 @@ export function createCommand<T extends Flags>(options: CreateCommandOptions<T>)
       process.exit(0);
     }
 
+    sayHello(options.command);
+
     await options.executor(data as TypedFlags<T>);
   };
+}
+
+function sayHello(cmd: string) {
+  console.log(chalk`🎹 ➜ {rgb(0,255,255).italic ${cmd}}\n`);
 }
