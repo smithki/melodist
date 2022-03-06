@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { expand } from 'dotenv-expand';
 import fs from 'fs';
 import path from 'path';
-import { createError, printWarning } from 'tweedle';
+import { printVisualSeparator, printWarning } from 'tweedle';
 import { checkFileExists } from './check-file-exists';
 
 async function processEnv(filepath: string) {
@@ -23,7 +23,7 @@ async function processEnv(filepath: string) {
       }
     }
   } catch (err: any) {
-    throw createError(`Encountered a problem loading environment: ${err.message}`, { cause: err });
+    throw new Error(`Encountered a problem loading environment: ${err.message}`, { cause: err });
   }
 
   return { ...process.env, parsed };
@@ -40,7 +40,8 @@ export async function loadEnv(env?: string) {
     const filepath = path.resolve(process.cwd(), env);
 
     if (!(await checkFileExists(filepath))) {
-      printWarning(chalk`Skipped environment (file doesn't exist: {cyan ${env}})\n`);
+      printWarning(chalk`Skipped environment (file doesn't exist: {cyan ${env}})`);
+      printVisualSeparator();
       return { ...process.env };
     }
 

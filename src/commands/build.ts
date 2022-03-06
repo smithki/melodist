@@ -121,6 +121,7 @@ export default createCommand(
   async (data) => {
     sayHello('build');
     await build({ data });
+    process.exit(1);
   },
 );
 

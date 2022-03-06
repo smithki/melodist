@@ -1,4 +1,4 @@
-import { initiate, printError } from 'tweedle';
+import { initiate } from 'tweedle';
 import { getVersion } from './utils/getVersion';
 
 // Commands
@@ -9,11 +9,4 @@ initiate({
   binaryName: 'melodist',
   version: getVersion(),
   commands: [buildCommand, devCommand],
-})
-  .then(() => {
-    process.exit(0);
-  })
-  .catch((err) => {
-    printError(err);
-    process.exit(1);
-  });
+});
