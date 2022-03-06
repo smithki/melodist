@@ -4,7 +4,7 @@ import { Flags } from '../cli/flags';
 import { bundle, getDefaultExternals } from '../utils/esbuild';
 
 export interface BuildOptions {
-  src: string;
+  srcdir: string;
   outdir: string;
   output: Format[];
   platform: 'browser' | 'node' | 'neutral';
@@ -17,7 +17,7 @@ export interface BuildOptions {
 }
 
 export const flags: Flags<BuildOptions> = {
-  src: {
+  srcdir: {
     type: String,
     description: '',
     default: './src',
@@ -101,7 +101,7 @@ export async function build(options: { data: BuildOptions; watch?: boolean }) {
         printMeta: i === 0,
 
         // Build options
-        src: data.src,
+        srcdir: data.srcdir,
         outdir: data.outdir,
         platform: data.platform,
         external: data.external,

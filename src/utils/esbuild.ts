@@ -8,7 +8,7 @@ import path from 'path';
 import { checkFileExists } from './check-file-exists';
 
 interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'format' | 'sourcemap'> {
-  src: string;
+  srcdir: string;
   outdir: string;
   global: string[];
   define: string[];
@@ -21,7 +21,7 @@ interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'f
  * Bundle with ESBuild.
  */
 export async function bundle(options: BuildOptions) {
-  const { src, outdir, global, define, name, watch, printMeta, ...rest } = options;
+  const { srcdir, outdir, global, define, name, watch, printMeta, ...rest } = options;
 
   // Bundle with ESBuild
   await esbuild.build({
@@ -75,11 +75,13 @@ function onRebuildFactory(options: BuildOptions) {
  * Copy ESM bundle to `.mjs` file.
  */
 async function createESMCompatBundle(options: BuildOptions) {
-  const outfile = await getOutfile(options);
-  if (outfile.endsWith('cjs')) {
-    await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.js'));
-  } else {
-    await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.mjs'));
+  if (options.format === 'esm') {
+    const outfile = await getOutfile(options);
+    if (outfile.endsWith('cjs')) {
+      await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.js'));
+    } else {
+      await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.mjs'));
+    }
   }
 }
 
@@ -107,10 +109,10 @@ async function getPackageJson() {
  */
 async function getEntrypoint(options: BuildOptions) {
   const findEntrypoint = async (indexTarget?: string) => {
-    if (options.format && (await checkFileExists(path.resolve(process.cwd(), `./src/index.${indexTarget}.ts`)))) {
-      return `${options.src}/index.${indexTarget}.ts`;
+    if (options.format && (await checkFileExists(`${options.srcdir}/index.${indexTarget}.ts`))) {
+      return `${options.srcdir}/index.${indexTarget}.ts`;
     }
-    return `${options.src}/index.ts`;
+    return `${options.srcdir}/index.ts`;
   };
 
   return findEntrypoint(options.format);
