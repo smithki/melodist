@@ -40,8 +40,10 @@ export function createCommand<T extends Flags>(options: CreateCommandOptions<T>)
       ...(options.flags ?? {}),
       ...globalOptions,
     } as Flags<GlobalOptions> & T;
-    const { version, help, ...data } = (await parseFlags(input, allFlags)) as TypedFlags<T> &
-      TypedFlags<Flags<GlobalOptions>>;
+
+    const parsedFlags = await parseFlags(input, allFlags);
+
+    const { version, help, ...data } = parsedFlags.data as TypedFlags<T> & TypedFlags<Flags<GlobalOptions>>;
 
     if (version) {
       console.log(getVersion());
@@ -53,6 +55,7 @@ export function createCommand<T extends Flags>(options: CreateCommandOptions<T>)
         command: options.command,
         flags: allFlags,
         examples: options.examples,
+        defaultData: parsedFlags.defaults,
       });
       process.exit(0);
     }

@@ -1,4 +1,4 @@
-import decamelize from 'decamelize';
+import doDecamelize from 'decamelize';
 import parseArgs from 'yargs-parser';
 import { createError } from '../utils/errors-warnings';
 import { filterNilValues } from '../utils/filter-nil-values';
@@ -48,23 +48,50 @@ type BaseFlag<T extends ValueType = ValueType> = {
   /**
    * Provides a default value for the flag.
    */
-  readonly default?: T | (() => T);
-};
+  readonly default?: T | (() => T | Promise<T>);
 
-/**
- * Configuration to modify the behavior of flag-based data inputs.
- */
-type BaseFlagWithRequiredDefault<T extends ValueType = ValueType> = BaseFlag<T> & {
   /**
-   * Provides a default value for the flag.
+   * Explicitly sets a label for the flag's default descriptor.
    */
-  readonly default: T | (() => T);
+  readonly defaultDescriptor?: string;
+
+  /**
+   * Marks a flag as required.
+   */
+  readonly required?: boolean;
 };
 
 /**
  * Configuration to modify the behavior of flag-based data inputs.
  */
-export type Flag<T extends ValueType = ValueType> = BaseFlag<T> | BaseFlagWithRequiredDefault<T>;
+type RequiredFlag<T extends ValueType = ValueType> =
+  | (BaseFlag<T> & {
+      /**
+       * Provides a default value for the flag.
+       */
+      readonly default?: void;
+
+      /**
+       * Marks a flag as required.
+       */
+      readonly required: true;
+    })
+  | (BaseFlag<T> & {
+      /**
+       * Provides a default value for the flag.
+       */
+      readonly default: T | (() => T | Promise<T>);
+
+      /**
+       * Marks a flag as required.
+       */
+      readonly required?: false;
+    });
+
+/**
+ * Configuration to modify the behavior of flag-based data inputs.
+ */
+export type Flag<T extends ValueType = ValueType> = BaseFlag<T> | RequiredFlag<T>;
 
 /**
  * A record of `Flag` values with data types given by `T`.
@@ -74,7 +101,7 @@ export type Flags<T extends Record<string, ValueType | null | undefined> = Recor
     ? BaseFlag<NonNullable<T[P]>>
     : null extends T[P]
     ? BaseFlag<NonNullable<T[P]>>
-    : BaseFlagWithRequiredDefault<NonNullable<T[P]>>;
+    : RequiredFlag<NonNullable<T[P]>>;
 };
 
 export type TypedFlags<F extends Flags> = F extends Flags<infer R> ? R : unknown;
@@ -82,7 +109,10 @@ export type TypedFlags<F extends Flags> = F extends Flags<infer R> ? R : unknown
 /**
  * Parse and validate input given by the user via CLI flags.
  */
-export async function parseFlags<T extends Flags>(input: string, flags: T): Promise<TypedFlags<T>> {
+export async function parseFlags<T extends Flags>(
+  input: string,
+  flags: T,
+): Promise<{ data: TypedFlags<T>; defaults: Record<string, any> }> {
   const aliases: Record<string, string[]> = {};
   const booleans: string[] = [];
 
@@ -101,25 +131,43 @@ export async function parseFlags<T extends Flags>(input: string, flags: T): Prom
     boolean: booleans,
   });
 
-  const defaultResults = getDefaults(flags);
-  const validatedResults = await validateFlagInputs(flags, results);
-  return { ...defaultResults, ...validatedResults };
+  const [defaultResults, validatedResults] = await Promise.all([
+    getDefaults(flags),
+    validateFlagInputs(flags, results),
+  ]);
+
+  return {
+    data: { ...defaultResults, ...validatedResults },
+    defaults: defaultResults,
+  };
 }
 
-function getDefaults<T extends Flags>(flags: T) {
+async function getDefaults<T extends Flags>(flags: T) {
   return filterNilValues<TypedFlags<T>>(
     Object.fromEntries(
-      Object.keys(flags)
-        .filter((flag) => flags[flag].default != null)
-        .map((key) => {
-          const flag = flags[key] as unknown as Flag;
-          return [key, typeof flag.default === 'function' ? flag.default() : flag.default];
-        }),
+      await Promise.all(
+        Object.keys(flags)
+          .filter((flag) => flags[flag].default != null)
+          .map(async (key) => {
+            const flag = flags[key] as unknown as Flag;
+            return [key, typeof flag.default === 'function' ? await flag.default() : flag.default];
+          }),
+      ),
     ) as TypedFlags<T>,
   );
 }
 
 async function validateFlagInputs<T extends Flags>(flags: T, data: {} = {}) {
+  // Validate flags with `required: true`...
+  const missingRequiredFlags = Object.keys(flags).filter((key) => flags[key].required && (data as any)[key] == null);
+  if (missingRequiredFlags.length) {
+    throw createError({
+      code: 'VALIDATION_ERROR',
+      message: `Missing required flag(s): ${missingRequiredFlags.map((flag) => `--${decamelize(flag)}`).join(', ')}`,
+    });
+  }
+
+  // Validate/coerce types for all other flags...
   return filterNilValues<TypedFlags<T>>(
     Object.fromEntries(
       await Promise.all(
@@ -140,7 +188,7 @@ async function validateFlagInputs<T extends Flags>(flags: T, data: {} = {}) {
             }
 
             // Validate results
-            const invalidMessage = await flag?.validate?.(result);
+            const invalidMessage = await flag.validate?.(result);
 
             if (invalidMessage && typeof invalidMessage === 'string') {
               throw createError({
@@ -150,19 +198,21 @@ async function validateFlagInputs<T extends Flags>(flags: T, data: {} = {}) {
             } else if (!invalidMessage && typeof invalidMessage === 'boolean') {
               throw createError({
                 code: 'VALIDATION_ERROR',
-                message: `--${decamelize(key, {
-                  separator: '-',
-                })} received invalid input.`,
+                message: `--${decamelize(key)} received invalid input.`,
               });
             }
 
-            return [key, result ?? (typeof flag.default === 'function' ? flag.default() : flag.default)];
+            return [key, result ?? (typeof flag.default === 'function' ? await flag.default() : flag.default)];
           }
 
-          // Return undefined if no flag is defined (we'll filter it out)
+          // Return undefined if no flag is defined (we filter it out)
           return [key, undefined];
         }),
       ),
     ),
   );
+}
+
+function decamelize(key: string) {
+  return doDecamelize(key, { separator: '-' });
 }

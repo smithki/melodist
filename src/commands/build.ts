@@ -1,25 +1,38 @@
+import type { Format } from 'esbuild';
 import { createCommand } from '../cli/create-command';
 import { Flags } from '../cli/flags';
-import { build } from '../utils/esbuild';
+import { build, getDefaultExternals } from '../utils/esbuild';
 
 export interface BuildOptions {
-  entry: string[];
+  src: string;
   outdir: string;
+  output: Format[];
   platform: 'browser' | 'node' | 'neutral';
+  external: string[];
+  globals: string[];
+  name?: string;
+  sourcemap?: boolean;
   [key: string]: any;
 }
 
 export const flags: Flags<BuildOptions> = {
-  entry: {
-    type: [String],
+  src: {
+    type: String,
     description: '',
-    default: [],
+    default: './src',
   },
 
   outdir: {
     type: String,
     description: '',
     default: '.melodist',
+  },
+
+  output: {
+    type: [String],
+    description: '',
+    alias: 'o',
+    default: ['cjs', 'esm'],
   },
 
   platform: {
@@ -32,6 +45,32 @@ export const flags: Flags<BuildOptions> = {
       }
     },
   },
+
+  external: {
+    type: [String],
+    description: '',
+    alias: 'e',
+    default: () => getDefaultExternals(),
+    defaultDescriptor: 'inferred from `package.json#dependencies` and `package.json#peerDependencies`',
+  },
+
+  globals: {
+    type: [String],
+    description: '',
+    alias: 'g',
+    default: [],
+  },
+
+  name: {
+    type: String,
+    description: '',
+  },
+
+  sourcemap: {
+    type: Boolean,
+    description: '',
+    default: true,
+  },
 };
 
 export default createCommand({
@@ -39,12 +78,30 @@ export default createCommand({
   flags,
   examples: [],
   executor: async (data) => {
-    console.log(data);
-    await build({
-      entryPoints: data.entry,
-      outdir: data.outdir,
-      platform: data.platform,
-    });
-    console.log('foo', data);
+    await buildFromOptions({ data });
   },
 });
+
+export async function buildFromOptions(options: { data: BuildOptions; watch?: boolean }) {
+  const { data, watch } = options;
+
+  await Promise.all(
+    data.output.map((output, i) => {
+      return build({
+        // Special options
+        watch,
+        printMeta: i === 0,
+
+        // Build options
+        src: data.src,
+        outdir: data.outdir,
+        platform: data.platform,
+        external: data.external,
+        format: output,
+        globals: data.globals,
+        name: data.name,
+        sourcemap: data.sourcemap,
+      });
+    }),
+  );
+}

@@ -18,7 +18,12 @@ const styled = {
 /**
  * Prints help text, including specific options for the given `scaffoldName`.
  */
-export function printHelp(options: { command: string; flags: Flags; examples: string[] }) {
+export function printHelp(options: {
+  command: string;
+  flags: Flags;
+  examples: string[];
+  defaultData: Record<string, any>;
+}) {
   const helpSections: string[] = [];
 
   // Usage
@@ -33,7 +38,7 @@ export function printHelp(options: { command: string; flags: Flags; examples: st
   helpSections.push(
     createHelpSection({
       heading: styled.Options,
-      content: createOptionsTable(options.flags),
+      content: createOptionsTable(options.flags, options.defaultData),
     }),
   );
 
@@ -65,18 +70,20 @@ function createHelpSection(config: { heading: string; content: string }) {
  * From the record of args to descriptions given by `source`,
  * output a printable table of arguments for the help text.
  */
-function createOptionsTable(flags: Record<string, string | Flag>) {
+function createOptionsTable(flags: Record<string, string | Flag>, defaultData: Record<string, any>) {
   const normalizeArg = (arg: string, config?: Flag) => {
     if (arg.startsWith('-') || arg.startsWith('[')) return arg;
+    const booleanPrefix = config?.type === Boolean && defaultData[arg] === true ? '(no-)' : '';
     return config?.alias
-      ? `--${decamelize(arg, { separator: '-' })}, -${config?.alias}`
-      : `--${decamelize(arg, { separator: '-' })}`;
+      ? `--${booleanPrefix}${decamelize(arg)}, -${config?.alias}`
+      : `--${booleanPrefix}${decamelize(arg)}`;
   };
 
   // Get a list of rows containing de-camelized args
   // as keys and formatted description texts as values
   const rows: Array<[string, string]> = Object.entries(flags).map(([arg, config]) => {
-    const configStr = typeof config === 'string' ? config : config.description + getDefaultArgLabel(config);
+    const configStr =
+      typeof config === 'string' ? config : config.description + getDefaultArgLabel(config, defaultData[arg]);
 
     return [`  ${normalizeArg(arg, typeof config === 'string' ? undefined : config)}`, configStr];
   });
@@ -94,11 +101,13 @@ function createOptionsTable(flags: Record<string, string | Flag>) {
  * Creates a default value label based on the
  * value type associated to the given `flag`.
  */
-function getDefaultArgLabel(flag: Flag) {
-  const type = Array.isArray(flag.default) ? typeof flag.default[0] : typeof flag.default;
-  const value = Array.isArray(flag.default)
-    ? `[${(flag.default as any).map(JSON.stringify).join(', ')}]`
-    : JSON.stringify(flag.default);
+function getDefaultArgLabel(flag: Flag, defaultValue: any) {
+  if (flag.defaultDescriptor) return chalk` {dim Default: {yellow ${flag.defaultDescriptor}}}`;
+
+  const type = Array.isArray(defaultValue) ? typeof defaultValue[0] : typeof defaultValue;
+  const value = Array.isArray(defaultValue)
+    ? `[${defaultValue.map((v: any) => JSON.stringify(v)).join(', ')}]`
+    : JSON.stringify(defaultValue);
 
   switch (type) {
     case 'string':
