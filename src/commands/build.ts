@@ -1,7 +1,7 @@
 import type { Format } from 'esbuild';
-import type { Flags } from '../cli/flags';
-import { createCommand } from '../cli/create-command';
+import { createCommand, Flags } from 'tweedle';
 import { bundle, getDefaultExternals } from '../utils/esbuild';
+import { sayHello } from '../utils/say-hello';
 
 export interface BuildOptions {
   srcdir: string;
@@ -84,8 +84,8 @@ export const flags: Flags<BuildOptions> = {
 export default createCommand({
   command: 'build',
   flags,
-  examples: [],
   executor: async (data) => {
+    sayHello('build');
     await build({ data });
   },
 });

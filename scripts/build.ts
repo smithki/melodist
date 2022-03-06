@@ -1,6 +1,5 @@
 #!/usr/bin/env ts-node-script
 
-import glob from 'fast-glob';
 import { build } from 'esbuild';
 import { Project } from 'ts-morph';
 
@@ -35,7 +34,7 @@ async function checkTypes() {
 
   // Bundle with ESBuild
   await build({
-    entryPoints: ['src/router.ts', ...(await glob('src/commands/*.ts'))],
+    entryPoints: ['src/index.ts'],
     outdir: 'dist',
     bundle: true,
     minify: !isWatchMode,
