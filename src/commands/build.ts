@@ -1,22 +1,27 @@
-import type { Format } from 'esbuild';
-import { createCommand, Flags } from 'tweedle';
+import type { Format, Platform } from 'esbuild';
+import {
+  createCommand,
+  FlagCollection,
+  FlagCollectionData,
+  PositionalArgCollection,
+  PositionalArgCollectionData,
+} from 'tweedle';
 import { bundle, getDefaultExternals } from '../utils/esbuild';
 import { sayHello } from '../utils/say-hello';
 
-export interface BuildOptions {
+export interface BuildOptions extends FlagCollectionData {
   srcdir: string;
   outdir: string;
   output: Format[];
-  platform: 'browser' | 'node' | 'neutral';
+  platform: Platform;
   external: string[];
   global: string[];
   define: string[];
   name?: string;
   sourcemap?: boolean;
-  [key: string]: any;
 }
 
-export const flags: Flags<BuildOptions> = {
+export const flags: FlagCollection<BuildOptions> = {
   srcdir: {
     type: String,
     description: '',
@@ -81,14 +86,39 @@ export const flags: Flags<BuildOptions> = {
   },
 };
 
-export default createCommand({
-  command: 'build',
-  flags,
-  executor: async (data) => {
+interface BuildArgs extends PositionalArgCollectionData {
+  asdfasdf: 'string' | 'asdf';
+  asdfasdfasdfa: string;
+}
+
+const positionalArgs: PositionalArgCollection<BuildArgs> = {
+  asdfasdf: {
+    description: '',
+    default: '',
+  },
+
+  asdfasdfasdfa: {
+    description: '',
+    default: '',
+  },
+};
+
+export default createCommand(
+  {
+    command: 'build',
+    flags,
+    positionalArgs,
+    variadicArg: {
+      description: 'asdf',
+    },
+  },
+
+  async (data) => {
+    console.log('data', data);
     sayHello('build');
     await build({ data });
   },
-});
+);
 
 export async function build(options: { data: BuildOptions; watch?: boolean }) {
   const { data, watch } = options;
