@@ -11,7 +11,7 @@ interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'f
   srcdir: string;
   outdir: string;
   global: string[];
-  define: string[];
+  define: Record<string, any>;
   name?: string;
   watch?: boolean;
   printMeta?: boolean;
@@ -33,7 +33,7 @@ export async function bundle(options: BuildOptions) {
     entryPoints: [await getEntrypoint(options)],
     plugins: [...globalsPlugin(Object.fromEntries(global.map((g) => g.split('='))) || {})],
     define: Object.fromEntries(
-      define.map((d) => d.split('=')).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
+      Object.entries(define).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
     ),
     watch: watch ? { onRebuild: onRebuildFactory(options) } : undefined,
 

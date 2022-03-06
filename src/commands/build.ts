@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import type { Format, Platform } from 'esbuild';
 import {
   createCommand,
@@ -7,43 +8,41 @@ import {
   PositionalArgCollectionData,
 } from 'tweedle';
 import { bundle, getDefaultExternals } from '../utils/esbuild';
+import { loadEnv } from '../utils/load-env';
 import { sayHello } from '../utils/say-hello';
 
 export interface BuildOptions extends FlagCollectionData {
-  srcdir: string;
   outdir: string;
-  output: Format[];
+  format: Format[];
   platform: Platform;
   external: string[];
+  'external:iife': string[];
   global: string[];
-  define: string[];
+  'global:iife': string[];
   name?: string;
   sourcemap?: boolean;
+  env?: string;
 }
 
 export const flags: FlagCollection<BuildOptions> = {
-  srcdir: {
-    type: String,
-    description: '',
-    default: './src',
-  },
-
   outdir: {
     type: String,
-    description: '',
+    description: 'Directory where output shall be placed.',
+    alias: 'o',
     default: '.melodist',
   },
 
-  output: {
+  format: {
     type: [String],
-    description: '',
-    alias: 'o',
+    description: 'A list of output formats that should be produced.',
+    alias: 'f',
     default: ['cjs', 'esm'],
   },
 
   platform: {
     type: String,
-    description: '',
+    description: 'Target platform (one of: browser, node, neutral).',
+    alias: 'p',
     default: 'neutral',
     validate: (input) => {
       if (!['browser', 'node', 'neutral'].includes(input)) {
@@ -54,52 +53,61 @@ export const flags: FlagCollection<BuildOptions> = {
 
   external: {
     type: [String],
-    description: '',
+    description: 'Dependencies to be externalized.',
     alias: 'e',
     default: () => getDefaultExternals(),
     defaultDescriptor: 'inferred from `package.json#dependencies` and `package.json#peerDependencies`',
   },
 
+  'external:iife': {
+    type: [String],
+    description: chalk`Dependencies to be externalized {underline if --format=iife is in use}.`,
+    alias: 'e:iife',
+    default: [],
+    defaultDescriptor: 'falls back to --external',
+  },
+
   global: {
     type: [String],
-    description: '',
+    description: chalk`Dependencies transpiled to global variables {italic (i.e.: --global react=React)}.`,
     alias: 'g',
     default: [],
   },
 
-  define: {
+  'global:iife': {
     type: [String],
-    description: '',
-    alias: 'd',
+    description: chalk`Dependencies transpiled to global variables {underline if --format=iife is in use} {italic (i.e.: --global:iife react=React)}.`,
+    alias: 'g:iife',
     default: [],
+    defaultDescriptor: 'falls back to --global',
   },
 
   name: {
     type: String,
-    description: '',
+    description: 'A global variable name to use if --format=iife is in use.',
   },
 
   sourcemap: {
     type: Boolean,
-    description: '',
+    description: 'Generate sourcemaps.',
     default: true,
+  },
+
+  env: {
+    type: String,
+    description: 'ENV file from which to load environment data.',
+    default: '.env',
   },
 };
 
-interface BuildArgs extends PositionalArgCollectionData {
-  asdfasdf: 'string' | 'asdf';
-  asdfasdfasdfa: string;
+export interface BuildArgs extends PositionalArgCollectionData {
+  srcdir: string;
 }
 
-const positionalArgs: PositionalArgCollection<BuildArgs> = {
-  asdfasdf: {
-    description: '',
-    default: '',
-  },
-
-  asdfasdfasdfa: {
-    description: '',
-    default: '',
+export const positionalArgs: PositionalArgCollection<BuildArgs> = {
+  srcdir: {
+    description: 'Directory where input shall be consumed from.',
+    default: './src',
   },
 };
 
@@ -108,23 +116,21 @@ export default createCommand(
     command: 'build',
     flags,
     positionalArgs,
-    variadicArg: {
-      description: 'asdf',
-    },
   },
 
   async (data) => {
-    console.log('data', data);
     sayHello('build');
     await build({ data });
   },
 );
 
-export async function build(options: { data: BuildOptions; watch?: boolean }) {
+export async function build(options: { data: BuildOptions & BuildArgs; watch?: boolean }) {
   const { data, watch } = options;
 
+  const define = await loadEnv(data.env);
+
   await Promise.all(
-    data.output.map((output, i) => {
+    data.format.map(async (format, i) => {
       return bundle({
         // Special options
         watch,
@@ -134,12 +140,12 @@ export async function build(options: { data: BuildOptions; watch?: boolean }) {
         srcdir: data.srcdir,
         outdir: data.outdir,
         platform: data.platform,
-        external: data.external,
-        format: output,
+        external: format === 'iife' ? data['external:iife'] ?? data.external : data.external,
         global: data.global,
-        define: data.define,
         name: data.name,
         sourcemap: data.sourcemap,
+        format,
+        define,
       });
     }),
   );

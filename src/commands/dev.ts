@@ -1,11 +1,12 @@
 import { createCommand } from 'tweedle';
 import { sayHello } from '../utils/say-hello';
-import { build, flags } from './build';
+import { build, flags, positionalArgs } from './build';
 
 export default createCommand(
   {
     command: 'dev',
     flags,
+    positionalArgs,
   },
 
   async (data) => {
