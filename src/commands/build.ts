@@ -56,7 +56,7 @@ export const flags: FlagCollection<BuildOptions> = {
     description: 'Dependencies to be externalized.',
     alias: 'e',
     default: () => getDefaultExternals(),
-    defaultDescriptor: 'inferred from `package.json#dependencies` and `package.json#peerDependencies`',
+    defaultDescriptor: 'inferred from `dependencies` and `peerDependencies`',
   },
 
   'external:iife': {
@@ -114,8 +114,10 @@ export const positionalArgs: PositionalArgCollection<BuildArgs> = {
 export default createCommand(
   {
     command: 'build',
+    description: 'Build command',
     flags,
     positionalArgs,
+    examples: ['test one two three'],
   },
 
   async (data) => {

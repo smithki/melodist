@@ -5,6 +5,7 @@ import { build, flags, positionalArgs } from './build';
 export default createCommand(
   {
     command: 'dev',
+    description: 'Development command',
     flags,
     positionalArgs,
   },

@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 import { expand } from 'dotenv-expand';
 import fs from 'fs';
 import path from 'path';
-import { printVisualSeparator, printWarning } from 'tweedle';
+import { printInfo, printVisualSeparator, printWarning } from 'tweedle';
 import { checkFileExists } from './check-file-exists';
 
-async function processEnv(filepath: string) {
+async function processEnv(filepath: string): Promise<Record<string, string | undefined>> {
   const origEnv = { ...process.env };
   const parsed: dotenv.DotenvParseOutput = {};
 
@@ -26,14 +26,14 @@ async function processEnv(filepath: string) {
     throw new Error(`Encountered a problem loading environment: ${err.message}`, { cause: err });
   }
 
-  return { ...process.env, parsed };
+  return { ...process.env, ...parsed };
 }
 
 /**
  * Using `env` as the target environment file,
  * parse and return environment data.
  */
-export async function loadEnv(env?: string) {
+export async function loadEnv(env?: string): Promise<Record<string, string | undefined>> {
   // We only load env during local development.
   // A value of "skip" flags that this build is happening in our deployment pipeline.
   if (env != null) {
@@ -45,7 +45,10 @@ export async function loadEnv(env?: string) {
       return { ...process.env };
     }
 
-    return processEnv(filepath);
+    return processEnv(filepath).then((result) => {
+      printInfo(chalk`Loaded environment (from: {cyan ${env}})`);
+      return result;
+    });
   }
 
   return { ...process.env };
