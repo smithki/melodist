@@ -22,6 +22,7 @@ export interface BuildOptions extends FlagCollectionData {
   name?: string;
   sourcemap?: boolean;
   env?: string;
+  tsconfig: string;
 }
 
 export const flags: FlagCollection<BuildOptions> = {
@@ -98,6 +99,12 @@ export const flags: FlagCollection<BuildOptions> = {
     description: 'ENV file from which to load environment data.',
     default: '.env',
   },
+
+  tsconfig: {
+    type: String,
+    description: 'TSConfig file from which to load TypeScript configuration.',
+    default: 'tsconfig.json',
+  },
 };
 
 export interface BuildArgs extends PositionalArgCollectionData {
@@ -135,11 +142,8 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
   await Promise.all(
     data.format.map(async (format, i) => {
       return bundle({
-        // Special options
         watch,
         printMeta: i === 0,
-
-        // Build options
         srcdir: data.srcdir,
         outdir: data.outdir,
         platform: data.platform,
@@ -147,6 +151,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         global: data.global,
         name: data.name,
         sourcemap: data.sourcemap,
+        tsconfig: data.tsconfig,
         format,
         define,
       });

@@ -5,7 +5,9 @@ import brotliSize from 'brotli-size';
 import prettyBytes from 'pretty-bytes';
 import fs from 'fs';
 import path from 'path';
+import { printVisualSeparator } from 'tweedle';
 import { checkFileExists } from './check-file-exists';
+import { checkTypes, createProject, refreshProject, Project } from './typescript';
 
 interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'format' | 'sourcemap'> {
   srcdir: string;
@@ -15,13 +17,22 @@ interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'f
   name?: string;
   watch?: boolean;
   printMeta?: boolean;
+  tsconfig: string;
 }
 
 /**
  * Bundle with ESBuild.
  */
 export async function bundle(options: BuildOptions) {
-  const { srcdir, outdir, global, define, name, watch, printMeta, ...rest } = options;
+  const { srcdir, outdir, global, define, name, watch, printMeta, tsconfig, ...rest } = options;
+
+  const tsproject = createProject({ srcdir, outdir, tsconfig });
+
+  if (options.printMeta) {
+    // Inital type-check
+    await checkTypes(tsproject);
+    await tsproject.emit();
+  }
 
   // Bundle with ESBuild
   await esbuild.build({
@@ -35,7 +46,7 @@ export async function bundle(options: BuildOptions) {
     define: Object.fromEntries(
       Object.entries(define).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
     ),
-    watch: watch ? { onRebuild: onRebuildFactory(options) } : undefined,
+    watch: watch ? { onRebuild: onRebuildFactory(options, tsproject) } : undefined,
 
     // We need this footer because: https://github.com/evanw/esbuild/issues/1182
     footer:
@@ -56,17 +67,24 @@ export async function bundle(options: BuildOptions) {
 /**
  * Returns a function that can be used to handle rebuild events from ESBuild.
  */
-function onRebuildFactory(options: BuildOptions) {
+function onRebuildFactory(options: BuildOptions, tsproject: Project) {
   return async (error: BuildFailure | null, result: BuildResult | null) => {
-    if (options.printMeta) console.log('------');
+    if (options.printMeta) {
+      printVisualSeparator();
+      console.log('------');
+      printVisualSeparator();
+    }
+
     if (error) {
       console.error(error.message);
     } else {
+      if (options.printMeta) {
+        await refreshProject(tsproject);
+        await checkTypes(tsproject);
+        await tsproject.emit();
+      }
       await printOutputSizeInfo(options);
       await createESMCompatBundle(options);
-      // await Promise.all(project.getSourceFiles().map((sourceFile) => sourceFile.refreshFromFileSystem()));
-      // await checkTypes();
-      // console.log('⚡️ Built');
     }
   };
 }
