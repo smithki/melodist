@@ -8,15 +8,15 @@ import {
   PositionalArgCollectionData,
   printError,
 } from 'tweedle';
-import { bundle, getDefaultExternals } from '../utils/esbuild';
-import { loadEnv } from '../utils/load-env';
+import { bundle } from '../build/bundle';
+import { loadEnv } from '../build/load-env';
 import { sayHello } from '../utils/say-hello';
 
 export interface BuildOptions extends FlagCollectionData {
   outdir: string;
   format: Format[];
   platform: Platform;
-  external: string[];
+  external?: string[];
   'external:iife': string[];
   global: string[];
   'global:iife': string[];
@@ -58,7 +58,6 @@ export const flags: FlagCollection<BuildOptions> = {
     type: [String],
     description: 'Dependencies to be externalized.',
     alias: 'e',
-    default: () => getDefaultExternals(),
     defaultDescriptor: 'inferred from `dependencies` and `peerDependencies`',
   },
 

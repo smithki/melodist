@@ -41,7 +41,8 @@ async function checkTypes() {
     target: 'es6',
     platform: 'node',
     format: 'cjs',
-    external: ['esbuild', 'ts-morph'],
+    external: ['esbuild', 'ts-morph', '@parcel/css'],
+    sourcemap: true,
     watch: isWatchMode
       ? {
           onRebuild: async (error) => {

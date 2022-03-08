@@ -1,6 +1,8 @@
 import { Foo } from './foo';
+import './spam.css';
+import styles from './monty.module.css';
 
-console.log('hello world', process.env.TEST);
+console.log('hello world', styles, process.env.TEST);
 
 export function bar(xyz: Foo) {}
 

@@ -27,12 +27,13 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': 0,
     '@typescript-eslint/no-unsafe-return': 0,
     '@typescript-eslint/no-empty-function': 0,
+    '@typescript-eslint/prefer-regexp-exec': 0,
     '@typescript-eslint/no-unsafe-assignment': 0,
     '@typescript-eslint/no-floating-promises': 0,
     '@typescript-eslint/no-useless-constructor': 0,
     '@typescript-eslint/no-unsafe-member-access': 0,
-    '@typescript-eslint/explicit-module-boundary-types': 0,
     '@typescript-eslint/restrict-template-expressions': 0,
+    '@typescript-eslint/explicit-module-boundary-types': 0,
   },
 
   settings: {

@@ -4,7 +4,7 @@ import { expand } from 'dotenv-expand';
 import fs from 'fs';
 import path from 'path';
 import { printInfo, printVisualSeparator, printWarning } from 'tweedle';
-import { checkFileExists } from './check-file-exists';
+import { checkFileExists } from '../utils/check-file-exists';
 
 async function processEnv(filepath: string): Promise<Record<string, string | undefined>> {
   const origEnv = { ...process.env };
