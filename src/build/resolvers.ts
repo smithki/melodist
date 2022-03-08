@@ -1,4 +1,5 @@
 import path from 'path';
+import { printError } from 'tweedle';
 import { checkFileExists } from '../utils/check-file-exists';
 import { getPackageJson } from '../utils/get-package-json';
 import { getProjectRoot } from '../utils/get-project-root';
@@ -34,7 +35,8 @@ export async function resolveEntrypoint(ctx: BuildContext, options?: { exts?: st
   const entrypoint = checks.find(Boolean);
 
   if (!entrypoint) {
-    throw new Error('Could not resolve entrypoint.');
+    printError(new Error('Could not resolve entrypoint.'));
+    process.exit(1);
   }
 
   entrypointCache.set(key, entrypoint);
