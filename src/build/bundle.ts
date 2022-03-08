@@ -1,5 +1,4 @@
 import esbuild, { Plugin } from 'esbuild';
-import path from 'path';
 import { resolveEntrypoint, resolveOutfile } from './resolvers';
 import { getDefaultExternals } from './externals';
 import { BuildContext } from './types';
@@ -16,7 +15,6 @@ import { esmCompatPlugin } from './plugins/esm-compat-plugin';
  */
 export async function bundle(ctx: BuildContext) {
   const outfile = await resolveOutfile(ctx);
-  const outdirResolved = path.dirname(outfile);
 
   await esbuild.build({
     outfile,
