@@ -4,7 +4,7 @@ import { getDefaultExternals } from './externals';
 import { BuildContext } from './types';
 
 // Plugins
-import { globalsPlugin } from './plugins/globals-plugin';
+import { globalsPlugins } from './plugins/globals-plugin';
 import { cssModulesPlugin } from './plugins/css-modules-plugin';
 import { typescriptPlugin } from './plugins/typescript-plugin';
 import { statsPlugin } from './plugins/stats-plugin';
@@ -33,7 +33,7 @@ export async function bundle(ctx: BuildContext) {
     watch: !!ctx.watch,
 
     plugins: [
-      ...globalsPlugin(ctx),
+      ...globalsPlugins(ctx),
       esmCompatPlugin(ctx),
       cssModulesPlugin(ctx),
       statsPlugin(ctx),

@@ -62,7 +62,7 @@ export function statsPlugin(options: BuildContext): Plugin {
         isInitialBuild = false;
       });
 
-      build.onEnd(async (result) => {
+      build.onEnd(async () => {
         await printOutputSizeInfo(options);
       });
     },
