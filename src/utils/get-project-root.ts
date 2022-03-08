@@ -20,7 +20,3 @@ export async function getProjectRoot(cwd: string = process.cwd()) {
 
   return result;
 }
-
-export async function resolveToProjectRoot(...pathSegments: string[]) {
-  return path.resolve(await getProjectRoot(), ...pathSegments);
-}
