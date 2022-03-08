@@ -1,7 +1,7 @@
 {
   "name": "melodist",
   "description": "An opinionated framework for creating TypeScript libraries published on NPM.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "Ian Smith <hello@iks.codes>",
   "bin": "./bin.js",
   "files": [
