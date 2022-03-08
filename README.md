@@ -116,7 +116,7 @@ For **IIFE** bundles, globals can be defined separately using `--global:iife` fl
 
 Both commands accept the same arguments and flags:
 
-```zsh
+```
 USAGE
 
 $ melodist <build|dev> [options] [<srcdir>]
