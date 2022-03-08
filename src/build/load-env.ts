@@ -45,6 +45,7 @@ export async function loadEnv(env?: string): Promise<Record<string, string | und
 
     return processEnv(filepath).then((result) => {
       printInfo(chalk`Loaded environment (from: {rgb(0,255,255) ${env}})`);
+      printVisualSeparator();
       return result;
     });
   }
