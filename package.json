@@ -32,7 +32,6 @@
     "@typescript-eslint/eslint-plugin": "~4.33.0",
     "agadoo": "~2.0.0",
     "brotli-size": "~4.0.0",
-    "browserslist": "~4.20.0",
     "chalk": "~4.1.0",
     "decamelize": "~6.0.0",
     "dotenv": "~16.0.0",
