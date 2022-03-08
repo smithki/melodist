@@ -1,17 +1,16 @@
 import { Plugin } from 'esbuild';
 import fs from 'fs';
 import path from 'path';
-import { resolveOutfile } from '../resolvers';
 import { BuildContext } from '../types';
 
-async function copyESMBundle(ctx: BuildContext) {
-  if (ctx.format === 'esm') {
-    const outfile = await resolveOutfile(ctx);
-    if (outfile.endsWith('mjs')) {
-      await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.js'));
-    } else {
-      await fs.promises.copyFile(outfile, path.join(path.dirname(outfile), 'index.mjs'));
-    }
+async function copyESMBundle(options: { filepath?: string }) {
+  const { filepath } = options;
+  if (!filepath) return;
+
+  if (filepath.endsWith('mjs')) {
+    await fs.promises.copyFile(filepath, path.join(path.dirname(filepath), 'index.js'));
+  } else {
+    await fs.promises.copyFile(filepath, path.join(path.dirname(filepath), 'index.mjs'));
   }
 }
 
@@ -25,8 +24,11 @@ export function esmCompatPlugin(ctx: BuildContext): Plugin {
   return {
     name: namespace,
     setup: (build) => {
-      build.onEnd(async () => {
-        await copyESMBundle(ctx);
+      build.onEnd(async (result) => {
+        if (ctx.format === 'esm') {
+          const jsOutput = Object.keys(result.metafile?.outputs ?? {}).find((o) => o.endsWith('js'));
+          await copyESMBundle({ filepath: jsOutput });
+        }
       });
     },
   };

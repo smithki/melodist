@@ -15,6 +15,7 @@ import { sayHello } from '../utils/say-hello';
 export interface BuildOptions extends FlagCollectionData {
   outdir: string;
   format: Format[];
+  esTarget: string;
   platform: Platform;
   external?: string[];
   'external:iife': string[];
@@ -40,6 +41,12 @@ export const flags: FlagCollection<BuildOptions> = {
     description: 'A list of output formats that should be produced.',
     alias: 'f',
     default: ['cjs', 'esm'],
+  },
+
+  esTarget: {
+    type: String,
+    description: 'The EcmaScript syntax version to compile to.',
+    default: 'esnext',
   },
 
   platform: {
@@ -160,6 +167,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         sourcemap: data.sourcemap,
         tsconfig: data.tsconfig,
         typecheck: data.typecheck,
+        esTarget: data.esTarget,
         format,
         define,
       }).catch((err) => {

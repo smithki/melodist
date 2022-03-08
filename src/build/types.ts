@@ -4,6 +4,7 @@ export interface BuildContext {
   platform: Platform;
   external?: string[];
   format: Format;
+  esTarget?: string;
   sourcemap?: boolean;
   srcdir: string;
   outdir: string;

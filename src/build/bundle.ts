@@ -1,5 +1,5 @@
 import esbuild, { Plugin } from 'esbuild';
-import { resolveEntrypoint, resolveOutfile } from './resolvers';
+import { resolveEntry, resolveOutDir } from './resolvers';
 import { getDefaultExternals } from './externals';
 import { BuildContext } from './types';
 
@@ -14,23 +14,25 @@ import { esmCompatPlugin } from './plugins/esm-compat-plugin';
  * Bundle with ESBuild.
  */
 export async function bundle(ctx: BuildContext) {
-  const outfile = await resolveOutfile(ctx);
-
   await esbuild.build({
-    outfile,
+    outdir: await resolveOutDir(ctx),
+    entryNames: '[dir]/index',
     platform: ctx.platform,
     format: ctx.format,
     sourcemap: ctx.sourcemap,
     external: ctx.external ?? (await getDefaultExternals(ctx.srcdir)),
     bundle: true,
-    target: 'es6',
+    target: ctx.esTarget,
     minify: !ctx.watch,
     globalName: ctx.name,
-    entryPoints: [await resolveEntrypoint(ctx)],
+    entryPoints: [await resolveEntry(ctx), await resolveEntry(ctx, { exts: ['css'], isOptional: true })].filter(
+      Boolean,
+    ) as string[],
     define: Object.fromEntries(
       Object.entries(ctx.define).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
     ),
     watch: !!ctx.watch,
+    metafile: true,
 
     plugins: [
       ...globalsPlugins(ctx),

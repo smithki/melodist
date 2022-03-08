@@ -3,7 +3,7 @@ import { bundle as bundleCSS, BundleOptions, UrlDependency } from '@parcel/css';
 import { createHash } from 'crypto';
 import path from 'path';
 import { BuildContext } from '../types';
-import { resolveOutfile } from '../resolvers';
+import { resolveOutDir } from '../resolvers';
 
 function camelize(str: string) {
   return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (match, index) => {
@@ -92,7 +92,7 @@ export function cssModulesPlugin(ctx: BuildContext): Plugin {
       build.onLoad({ filter: cssModulesRegex }, async (args) => {
         const { jsContent, cssContent } = await handleCSS({
           filename: args.path,
-          outdir: path.dirname(await resolveOutfile(ctx)),
+          outdir: await resolveOutDir(ctx),
           watch: !!watch,
           sourcemap: !!sourcemap,
         });

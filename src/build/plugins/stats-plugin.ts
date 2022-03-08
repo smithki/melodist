@@ -1,29 +1,39 @@
-import { Format, Plugin } from 'esbuild';
+import { Plugin } from 'esbuild';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import gzipSize from 'gzip-size';
 import brotliSize from 'brotli-size';
-import { resolveOutfile } from '../resolvers';
+import { resolveOutDir } from '../resolvers';
 import { BuildContext } from '../types';
 
 /**
  * Prints the size of the output file(s) produced by ESBuild.
  */
-async function printOutputSizeInfo(options: BuildContext) {
-  const outfile = await resolveOutfile(options);
-  const sizeInfo = await getSizeInfo((await fs.promises.readFile(outfile)).toString(), outfile, options.format);
+async function printOutputSizeInfo(ctx: BuildContext, options: { filepaths?: Array<string | undefined> }) {
+  const { filepaths = [] } = options;
+  if (!filepaths.length) return;
 
-  const outdir = path.relative(process.cwd(), path.dirname(outfile));
-  console.log(chalk`Built {rgb(0,255,255) ${options.format}} to {gray ${outdir}}`);
-  console.log(sizeInfo);
+  const sizeInfos = await Promise.all(
+    (filepaths.filter(Boolean) as string[]).map(async (filepath) => {
+      const code = (await fs.promises.readFile(filepath)).toString();
+      return getSizeInfo(ctx, { code, filepath });
+    }),
+  );
+
+  if (sizeInfos.length) {
+    const outdir = await resolveOutDir(ctx);
+    console.log(chalk`Built {rgb(0,255,255) ${ctx.format}} to {gray ${outdir}}`);
+    console.log(sizeInfos.join('\n'));
+  }
 }
 
 /**
  * Returns the GZIP and BROTLI sizes of the generated bundle.
  */
-async function getSizeInfo(code: string, filename: string, format?: Format) {
+async function getSizeInfo(ctx: BuildContext, options: { code: string; filepath: string }) {
+  const { code, filepath } = options;
   const raw = code.length < 5000;
 
   const formatSize = (size: number | null, type: 'gz' | 'br') => {
@@ -31,9 +41,9 @@ async function getSizeInfo(code: string, filename: string, format?: Format) {
     const pretty = raw ? `${size} B` : prettyBytes(size);
     // eslint-disable-next-line no-nested-ternary
     const color = size < 5000 ? chalk.green : size > 40000 ? chalk.red : chalk.yellow;
-    return format === 'esm'
-      ? `${color(pretty)}: ${chalk.white(path.basename(filename).replace('js', '(m)js'))}.${type}`
-      : `${color(pretty)}: ${chalk.white(path.basename(filename))}.${type}`;
+    return ctx.format === 'esm'
+      ? `${color(pretty)}: ${chalk.white(path.basename(filepath).replace('js', '(m)js'))}.${type}`
+      : `${color(pretty)}: ${chalk.white(path.basename(filepath))}.${type}`;
   };
 
   const [gzip, brotli] = await Promise.all([gzipSize(code).catch(() => null), brotliSize(code).catch(() => null)]);
@@ -46,7 +56,7 @@ async function getSizeInfo(code: string, filename: string, format?: Format) {
  * Perform type-checking and generate type
  * definitions based on files resolved in the bundle.
  */
-export function statsPlugin(options: BuildContext): Plugin {
+export function statsPlugin(ctx: BuildContext): Plugin {
   const namespace = `melodist.stats`;
 
   return {
@@ -55,15 +65,18 @@ export function statsPlugin(options: BuildContext): Plugin {
       let isInitialBuild = true;
 
       build.onStart(() => {
-        if (options.isInitialBuildInstance && !isInitialBuild) {
+        if (ctx.isInitialBuildInstance && !isInitialBuild) {
           console.log(chalk`\n{dim ❮❮❮} rebuilding {dim ❯❯❯}\n`);
         }
 
         isInitialBuild = false;
       });
 
-      build.onEnd(async () => {
-        await printOutputSizeInfo(options);
+      build.onEnd(async (result) => {
+        const outputs = Object.keys(result.metafile?.outputs ?? {});
+        const jsOutput = outputs.find((o) => o.endsWith('js'));
+        const cssOutput = outputs.find((o) => o.endsWith('css'));
+        await printOutputSizeInfo(ctx, { filepaths: [jsOutput, cssOutput] });
       });
     },
   };

@@ -11,9 +11,23 @@ const entrypointCache = new Map<string, string>();
  * Resolves the entrypoint file for ESBuild,
  * based on the format and target platform.
  */
+export async function resolveEntry(ctx: BuildContext): Promise<string>;
 
-export async function resolveEntrypoint(ctx: BuildContext, options?: { exts?: string[] }): Promise<string> {
-  const { exts = ['ts', 'tsx'] } = options ?? {};
+export async function resolveEntry(
+  ctx: BuildContext,
+  options: { exts?: string[]; isOptional?: false },
+): Promise<string>;
+
+export async function resolveEntry(
+  ctx: BuildContext,
+  options?: { exts?: string[]; isOptional: true },
+): Promise<string | undefined>;
+
+export async function resolveEntry(
+  ctx: BuildContext,
+  options?: { exts?: string[]; isOptional?: boolean },
+): Promise<string | undefined> {
+  const { exts = ['ts', 'tsx'], isOptional = false } = options ?? {};
   const key = `${ctx.format}:${exts.join(',')}`;
 
   if (entrypointCache.has(key)) {
@@ -34,20 +48,22 @@ export async function resolveEntrypoint(ctx: BuildContext, options?: { exts?: st
 
   const entrypoint = checks.find(Boolean);
 
-  if (!entrypoint) {
+  if (!entrypoint && !isOptional) {
     printError(new Error('Could not resolve entrypoint.'));
     process.exit(1);
   }
 
-  entrypointCache.set(key, entrypoint);
-  return entrypoint;
+  if (entrypoint) {
+    entrypointCache.set(key, entrypoint);
+  }
+
+  return entrypoint || undefined;
 }
 
 /**
  * Get a formatted, destination outfile.
  */
-export async function resolveOutfile(ctx: BuildContext) {
+export async function resolveOutDir(ctx: BuildContext) {
   const projectRoot = await getProjectRoot(ctx.srcdir);
-  const ext = (await getPackageJson(projectRoot)).type === 'module' ? 'cjs' : 'js';
-  return path.join(projectRoot, ctx.outdir, ctx.format, `index.${ext}`);
+  return path.join(projectRoot, ctx.outdir, ctx.format);
 }
