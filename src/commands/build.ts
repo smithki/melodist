@@ -154,10 +154,9 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
   const define = await loadEnv(data.env);
 
   await Promise.all(
-    data.format.map(async (format, i) => {
+    data.format.map(async (format) => {
       return bundle({
         watch,
-        isInitialBuildInstance: i === 0,
         srcdir: data.srcdir,
         outdir: data.outdir,
         platform: data.platform,

@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import gzipSize from 'gzip-size';
 import brotliSize from 'brotli-size';
+import { printVisualSeparator } from 'tweedle';
 import { resolveOutDir } from '../resolvers';
 import { BuildContext } from '../types';
 
@@ -52,6 +53,8 @@ async function getSizeInfo(ctx: BuildContext, options: { code: string; filepath:
   return `  ${out}`;
 }
 
+let totalBuildCount = 0;
+
 /**
  * Perform type-checking and generate type
  * definitions based on files resolved in the bundle.
@@ -62,14 +65,17 @@ export function statsPlugin(ctx: BuildContext): Plugin {
   return {
     name: namespace,
     setup: (build) => {
-      let isInitialBuild = true;
+      let buildCount = 0;
 
       build.onStart(() => {
-        if (ctx.isInitialBuildInstance && !isInitialBuild) {
-          console.log(chalk`\n{dim ❮❮❮} rebuilding {dim ❯❯❯}\n`);
-        }
+        buildCount++;
 
-        isInitialBuild = false;
+        if (buildCount > 1 && totalBuildCount < buildCount) {
+          printVisualSeparator();
+          console.log(chalk`{dim ❮❮❮} rebuilding {dim ❯❯❯}`);
+          printVisualSeparator();
+          totalBuildCount = buildCount;
+        }
       });
 
       build.onEnd(async (result) => {

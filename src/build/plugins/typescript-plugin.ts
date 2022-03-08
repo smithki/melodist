@@ -27,6 +27,8 @@ async function checkTypesAndEmitDeclarations(project: Project) {
   await project.emit();
 }
 
+let totalBuildCount = 0;
+
 /**
  * Perform type-checking and generate type
  * definitions based on files resolved in the bundle.
@@ -38,8 +40,15 @@ export function typescriptPlugin(ctx: BuildContext): Plugin {
   return {
     name: namespace,
     setup: (build) => {
+      let buildCount = 0;
+
       build.onStart(async () => {
-        await checkTypesAndEmitDeclarations(tsProject);
+        buildCount++;
+
+        if (buildCount > 1 && totalBuildCount < buildCount) {
+          await checkTypesAndEmitDeclarations(tsProject);
+          totalBuildCount = buildCount;
+        }
       });
     },
   };
