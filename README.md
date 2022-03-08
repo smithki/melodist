@@ -111,7 +111,8 @@ For **IIFE** bundles, globals can be defined separately using `--global:iife` fl
 #### `melodist build` / `melodist dev`
 
 `melodist build` creates an optimized, production-ready bundle.
-`meldoist dev` serves a hot-reloading development server.
+
+`melodist dev` serves a hot-reloading development server.
 
 Both commands accept the same arguments and flags:
 
