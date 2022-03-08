@@ -10,7 +10,7 @@ export default createCommand(
     positionalArgs,
   },
 
-  async (data) => {
+  async ({ data }) => {
     sayHello('dev');
     await build({ data, watch: true });
   },

@@ -134,10 +134,10 @@ export default createCommand(
     examples: ['test one two three'],
   },
 
-  async (data) => {
+  async ({ data, shutdown }) => {
     sayHello('build');
     await build({ data });
-    process.exit(1);
+    shutdown();
   },
 );
 
