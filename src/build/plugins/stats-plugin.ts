@@ -55,7 +55,7 @@ export function statsPlugin(options: BuildContext): Plugin {
       let isInitialBuild = true;
 
       build.onStart(() => {
-        if (options.printMeta && !isInitialBuild) {
+        if (options.isInitialBuildInstance && !isInitialBuild) {
           console.log(chalk`\n{dim ❮❮❮} rebuilding {dim ❯❯❯}\n`);
         }
 

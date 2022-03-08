@@ -150,7 +150,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
     data.format.map(async (format, i) => {
       return bundle({
         watch,
-        printMeta: i === 0,
+        isInitialBuildInstance: i === 0,
         srcdir: data.srcdir,
         outdir: data.outdir,
         platform: data.platform,

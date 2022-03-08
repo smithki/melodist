@@ -37,7 +37,7 @@ export async function bundle(ctx: BuildContext) {
       esmCompatPlugin(ctx),
       cssModulesPlugin(ctx),
       statsPlugin(ctx),
-      ctx.printMeta && ctx.typecheck && typescriptPlugin(ctx),
+      ctx.isInitialBuildInstance && ctx.typecheck && typescriptPlugin(ctx),
     ].filter(Boolean) as Plugin[],
   });
 }

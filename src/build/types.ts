@@ -11,7 +11,7 @@ export interface BuildContext {
   define: Record<string, any>;
   name?: string;
   watch?: boolean;
-  printMeta?: boolean;
+  isInitialBuildInstance?: boolean;
   tsconfig: string;
   typecheck?: boolean;
 }
