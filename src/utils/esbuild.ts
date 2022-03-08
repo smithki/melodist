@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { printVisualSeparator } from 'tweedle';
 import { checkFileExists } from './check-file-exists';
-import { checkTypes, createProject, refreshProject, Project } from './typescript';
+import { createProject, checkTypesAndEmitDeclarations, Project } from './typescript';
 
 interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'format' | 'sourcemap'> {
   srcdir: string;
@@ -18,21 +18,24 @@ interface BuildOptions extends Pick<ESBuildOptions, 'platform' | 'external' | 'f
   watch?: boolean;
   printMeta?: boolean;
   tsconfig: string;
+  typecheck?: boolean;
 }
 
 /**
  * Bundle with ESBuild.
  */
 export async function bundle(options: BuildOptions) {
-  const { srcdir, outdir, global, define, name, watch, printMeta, tsconfig, ...rest } = options;
+  const { srcdir, outdir, global, define, name, watch, printMeta, tsconfig, typecheck, ...rest } = options;
 
   const tsproject = createProject({ srcdir, outdir, tsconfig });
 
-  if (options.printMeta) {
-    // Inital type-check
-    await checkTypes(tsproject);
-    await tsproject.emit();
+  if (printMeta && typecheck) {
+    await checkTypesAndEmitDeclarations(tsproject);
   }
+
+  await new Promise((resolve) => {
+    setTimeout(resolve, 2000);
+  });
 
   // Bundle with ESBuild
   await esbuild.build({
@@ -41,23 +44,13 @@ export async function bundle(options: BuildOptions) {
     target: 'es6',
     minify: !watch,
     outfile: await getOutfile(options),
+    globalName: name,
     entryPoints: [await getEntrypoint(options)],
     plugins: [...globalsPlugin(Object.fromEntries(global.map((g) => g.split('='))) || {})],
     define: Object.fromEntries(
       Object.entries(define).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
     ),
     watch: watch ? { onRebuild: onRebuildFactory(options, tsproject) } : undefined,
-
-    // We need this footer because: https://github.com/evanw/esbuild/issues/1182
-    footer:
-      options.format === 'iife' && !!name
-        ? {
-            // This snippet replaces `window.{name}` with
-            // `window.{name}.default`, with any additional named exports
-            // assigned. Finally, it removes `window.{name}.default`.
-            js: `if (${name} && ${options.name}.default != null) { ${name} = Object.assign(${name}.default, ${name}); delete ${name}.default; }`,
-          }
-        : undefined,
   });
 
   await printOutputSizeInfo(options);
@@ -78,10 +71,8 @@ function onRebuildFactory(options: BuildOptions, tsproject: Project) {
     if (error) {
       console.error(error.message);
     } else {
-      if (options.printMeta) {
-        await refreshProject(tsproject);
-        await checkTypes(tsproject);
-        await tsproject.emit();
+      if (options.printMeta && options.typecheck) {
+        await checkTypesAndEmitDeclarations(tsproject);
       }
       await printOutputSizeInfo(options);
       await createESMCompatBundle(options);

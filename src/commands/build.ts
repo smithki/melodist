@@ -6,6 +6,7 @@ import {
   FlagCollectionData,
   PositionalArgCollection,
   PositionalArgCollectionData,
+  printError,
 } from 'tweedle';
 import { bundle, getDefaultExternals } from '../utils/esbuild';
 import { loadEnv } from '../utils/load-env';
@@ -23,6 +24,7 @@ export interface BuildOptions extends FlagCollectionData {
   sourcemap?: boolean;
   env?: string;
   tsconfig: string;
+  typecheck?: boolean;
 }
 
 export const flags: FlagCollection<BuildOptions> = {
@@ -105,6 +107,12 @@ export const flags: FlagCollection<BuildOptions> = {
     description: 'TSConfig file from which to load TypeScript configuration.',
     default: 'tsconfig.json',
   },
+
+  typecheck: {
+    type: Boolean,
+    description: 'Whether to validate TypeScript typings at build time.',
+    default: true,
+  },
 };
 
 export interface BuildArgs extends PositionalArgCollectionData {
@@ -152,8 +160,12 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         name: data.name,
         sourcemap: data.sourcemap,
         tsconfig: data.tsconfig,
+        typecheck: data.typecheck,
         format,
         define,
+      }).catch((err) => {
+        printError(new Error(chalk`Failed to build ${chalk.rgb(0, 255, 255)(format)}.`));
+        throw err;
       });
     }),
   );

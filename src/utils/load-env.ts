@@ -34,19 +34,17 @@ async function processEnv(filepath: string): Promise<Record<string, string | und
  * parse and return environment data.
  */
 export async function loadEnv(env?: string): Promise<Record<string, string | undefined>> {
-  // We only load env during local development.
-  // A value of "skip" flags that this build is happening in our deployment pipeline.
   if (env != null) {
     const filepath = path.resolve(process.cwd(), env);
 
     if (!(await checkFileExists(filepath))) {
-      printWarning(chalk`Skipped environment (file doesn't exist: {cyan ${env}})`);
+      printWarning(chalk`Skipped environment (file doesn't exist: {rgb(0,255,255) ${env}})`);
       printVisualSeparator();
       return { ...process.env };
     }
 
     return processEnv(filepath).then((result) => {
-      printInfo(chalk`Loaded environment (from: {cyan ${env}})`);
+      printInfo(chalk`Loaded environment (from: {rgb(0,255,255) ${env}})`);
       return result;
     });
   }
