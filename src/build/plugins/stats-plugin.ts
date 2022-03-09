@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import gzipSize from 'gzip-size';
 import brotliSize from 'brotli-size';
+import { printVisualSeparator } from 'tweedle';
 import { resolveOutDir } from '../resolvers';
 import { BuildContext } from '../types';
 import { Logger } from '../../utils/logger';
@@ -23,7 +24,7 @@ async function printOutputSizeInfo(ctx: BuildContext, options: { filepaths?: Arr
   const sizeInfos = await Promise.all(
     definedFilePaths.map(async (filepath) => {
       const code = (await fs.promises.readFile(filepath)).toString();
-      return getSizeInfo(ctx, { code });
+      return getSizeInfo(code);
     }),
   );
 
@@ -46,8 +47,7 @@ async function printOutputSizeInfo(ctx: BuildContext, options: { filepaths?: Arr
 /**
  * Returns the GZIP and BROTLI sizes of the generated bundle.
  */
-async function getSizeInfo(ctx: BuildContext, options: { code: string }) {
-  const { code } = options;
+async function getSizeInfo(code: string) {
   const raw = code.length < 5000;
 
   const formatSize = (size: number | null, type: 'gz' | 'br') => {
@@ -63,8 +63,34 @@ async function getSizeInfo(ctx: BuildContext, options: { code: string }) {
 }
 
 async function reportErrors(ctx: BuildContext, errors: Message[]) {
-  console.log(chalk`{red Build failed} ({cyan ${ctx.format}})`);
-  errors.forEach((err) => console.log(err.text));
+  Logger.bundle.error(chalk`{red Build failed} ({cyan ${ctx.format}})`);
+  printVisualSeparator();
+  errors.forEach((err) => {
+    console.error(formatError(err));
+    printVisualSeparator();
+  });
+  printVisualSeparator();
+}
+
+function formatError(error: Message) {
+  const result: string[] = [];
+
+  result.push(
+    error.location
+      ? chalk`{cyan ${error.location?.file}}:{yellow ${error.location?.line}}:{yellow ${error.location?.column}} - ${error.text}`
+      : error.text,
+  );
+
+  if (error.location) {
+    result.push(
+      chalk`\n{inverse ${error.location.line}} ${error.location.lineText}`,
+      chalk.inverse(' ').repeat(String(error.location.line).length) +
+        ' '.repeat(error.location.column + 1 || 0) +
+        chalk.red('~').repeat(error.location?.length ?? 1),
+    );
+  }
+
+  return result.join('\n');
 }
 
 /**
@@ -88,7 +114,6 @@ export function statsPlugin(ctx: BuildContext): Plugin {
 
       build.onEnd(async (result) => {
         if (result.errors.length) {
-          Logger.bundle.error(chalk`Errors detected ({cyan ${ctx.format}}):`);
           return reportErrors(ctx, result.errors);
         }
 

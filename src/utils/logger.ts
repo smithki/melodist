@@ -17,7 +17,7 @@ function createLogger(label: string) {
 }
 
 function createRow(label: string, message: string) {
-  const labelLength = stripAnsi(label).length;
+  const labelLength = stripAnsi(label).length + 1;
 
   const table = new Table({
     chars: {
@@ -41,7 +41,7 @@ function createRow(label: string, message: string) {
       'padding-left': 0,
       'padding-right': 1,
     },
-    colWidths: [labelLength + 1, process.stdout.columns - labelLength - 1],
+    colWidths: [labelLength, process.stdout.columns - labelLength],
     wordWrap: true,
   });
 
