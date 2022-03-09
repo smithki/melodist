@@ -1,7 +1,7 @@
 {
   "name": "melodist",
   "description": "An opinionated bundler for creating TypeScript libraries.",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "author": "Ian Smith <hello@iks.codes>",
   "license": "MIT",
   "bin": "./bin.js",
