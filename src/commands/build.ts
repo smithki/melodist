@@ -143,7 +143,7 @@ export default createCommand(
 
   async ({ data, shutdown }) => {
     sayHello('build');
-    await build({ data });
+    await build({ data }).catch(() => shutdown(1));
     shutdown();
   },
 );
@@ -154,7 +154,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
   const define = await loadEnv(data.env);
 
   await Promise.all(
-    data.format.map(async (format) => {
+    data.format.map(async (format, i) => {
       return bundle({
         watch,
         srcdir: data.srcdir,
@@ -165,13 +165,10 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         name: data.name,
         sourcemap: data.sourcemap,
         tsconfig: data.tsconfig,
-        typecheck: data.typecheck,
+        typecheck: data.typecheck && i === 0,
         esTarget: data.esTarget,
         format,
         define,
-      }).catch((err) => {
-        printError(new Error(chalk`Failed to build ${chalk.rgb(0, 255, 255)(format)}.`));
-        throw err;
       });
     }),
   );

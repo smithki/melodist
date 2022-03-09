@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 import { expand } from 'dotenv-expand';
 import fs from 'fs';
 import path from 'path';
-import { printInfo, printVisualSeparator, printWarning } from 'tweedle';
 import { checkFileExists } from '../utils/check-file-exists';
+import { Logger } from '../utils/logger';
 
 async function processEnv(filepath: string): Promise<Record<string, string | undefined>> {
   const origEnv = { ...process.env };
@@ -38,14 +38,12 @@ export async function loadEnv(env?: string): Promise<Record<string, string | und
     const filepath = path.resolve(process.cwd(), env);
 
     if (!(await checkFileExists(filepath))) {
-      printWarning(chalk`Skipped environment (file doesn't exist: {rgb(0,255,255) ${env}})`);
-      printVisualSeparator();
+      Logger.env.warn(chalk`Skipped environment (file doesn't exist: {cyan ${env}})`);
       return { ...process.env };
     }
 
     return processEnv(filepath).then((result) => {
-      printInfo(chalk`Loaded environment (from: {rgb(0,255,255) ${env}})`);
-      printVisualSeparator();
+      Logger.env.success(chalk`Loaded environment (from: {cyan ${env}})`);
       return result;
     });
   }
