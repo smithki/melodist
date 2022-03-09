@@ -6,7 +6,6 @@ import {
   FlagCollectionData,
   PositionalArgCollection,
   PositionalArgCollectionData,
-  printError,
 } from 'tweedle';
 import { bundle } from '../build/bundle';
 import { loadEnv } from '../build/load-env';
@@ -26,6 +25,7 @@ export interface BuildOptions extends FlagCollectionData {
   env?: string;
   tsconfig: string;
   typecheck?: boolean;
+  minify: boolean;
 }
 
 export const flags: FlagCollection<BuildOptions> = {
@@ -119,6 +119,12 @@ export const flags: FlagCollection<BuildOptions> = {
     description: 'Whether to validate TypeScript typings at build time.',
     default: true,
   },
+
+  minify: {
+    type: Boolean,
+    description: 'Whether to optimize bundles through code minification.',
+    default: true,
+  },
 };
 
 export interface BuildArgs extends PositionalArgCollectionData {
@@ -167,6 +173,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         tsconfig: data.tsconfig,
         typecheck: data.typecheck && i === 0,
         esTarget: data.esTarget,
+        minify: data.minify,
         format,
         define,
       });

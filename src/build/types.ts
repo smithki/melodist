@@ -14,4 +14,5 @@ export interface BuildContext {
   watch?: boolean;
   tsconfig: string;
   typecheck?: boolean;
+  minify: boolean;
 }

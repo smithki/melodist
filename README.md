@@ -162,6 +162,9 @@ OPTIONS
 --(no-)typecheck   Whether to validate TypeScript typings at build time. Default:
                    true
 
+--(no-)minify      Whether to optimize bundles through code minification. Default:
+                   true
+
 --help, -h         Show help text (you're lookin' at it).
 
 --version, -v      Show current version.
