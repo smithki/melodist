@@ -16,7 +16,7 @@ export async function createTypeChecker(ctx: BuildContext) {
   });
 
   if (ctx.typecheck) {
-    Logger.typeCheck.info('File change detected; running type-checker...');
+    Logger.typeCheck.info('Running type-checker...');
     await runTypeScriptDiagnostics(project);
   }
 
