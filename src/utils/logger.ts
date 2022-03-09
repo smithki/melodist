@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import stripAnsi from 'strip-ansi';
+import isCI from 'is-ci';
 import { logSymbols } from './log-symbols';
 
 function createLogger(label: string) {
@@ -17,6 +18,7 @@ function createLogger(label: string) {
 }
 
 function createRow(label: string, message: string) {
+  if (isCI) return `${label} ${message}`;
   const labelLength = stripAnsi(label).length + 1;
 
   const table = new Table({
