@@ -17,7 +17,7 @@ export async function createWatcher(dir: string) {
     },
 
     removeListener: (fn: SubscribeCallback) => {
-      listeners.add(fn);
+      listeners.delete(fn);
     },
 
     close: () => watcher.unsubscribe(),

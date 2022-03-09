@@ -20,6 +20,12 @@ function getAbsoluteUrl(resolveDir: string, url: string) {
   return path.resolve(resolveDir, pureUrl);
 }
 
+/**
+ * The sourcemap created by `@parcel/css` needs some slight tweaking to be
+ * consistent with sourcemaps created by ESBuild:
+ *   - Resolve `sources` to the configured `outdir`
+ *   - Convert `sources` to absolute paths.
+ */
 function patchSourcemap(map: Buffer, outdir: string) {
   const originalMap = JSON.parse(map.toString('utf-8'));
   const patchedMap = {

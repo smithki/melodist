@@ -18,8 +18,6 @@ yarn add -D melodist
 
 ## 📖 Documentation
 
-### Concepts
-
 ### Understanding `melodist` outputs
 
 `melodist` works in tandem with [ESBuild](https://esbuild.github.io/) and [TypeScript](https://www.typescriptlang.org/) to generate production-ready code bundles that are publishable to NPM, along with TypeScript definition files to support strongly-typed integrations by default.
