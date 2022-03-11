@@ -1,19 +1,19 @@
 import chalk from 'chalk';
-import dotenv from 'dotenv';
+import { parse as parseDotenvFile, DotenvParseOutput, DotenvConfigOutput } from 'dotenv';
 import { expand } from 'dotenv-expand';
 import fs from 'fs';
 import path from 'path';
 import { checkFileExists } from '../utils/check-file-exists';
 import { Logger } from '../utils/logger';
 
-async function processEnv(filepath: string): Promise<Record<string, string | undefined>> {
+async function dotenv(filepath: string): Promise<Record<string, string | undefined>> {
   const origEnv = { ...process.env };
-  const parsed: dotenv.DotenvParseOutput = {};
+  const parsed: DotenvParseOutput = {};
 
   try {
-    let result: dotenv.DotenvConfigOutput = {};
+    let result: DotenvConfigOutput = {};
     const envFileContents = await fs.promises.readFile(filepath, 'utf8');
-    result.parsed = dotenv.parse(envFileContents);
+    result.parsed = parseDotenvFile(envFileContents);
 
     result = expand(result);
 
@@ -42,11 +42,41 @@ export async function loadEnv(env?: string): Promise<Record<string, string | und
       return { ...process.env };
     }
 
-    return processEnv(filepath).then((result) => {
+    return dotenv(filepath).then((result) => {
       Logger.env.success(chalk`Loaded environment (from: {cyan ${env}})`);
       return result;
     });
   }
 
   return { ...process.env };
+}
+
+/**
+ * Takes an environment definition (`env`, loaded using `loadEnv()`) and applies
+ * those definitions to the following globals:
+ *
+ *   - process.env.{key}
+ *   - global.process.env.{key}
+ *   - globalThis.process.env.{key}
+ *   - import.meta.env.{key}
+ */
+export function defineEnv(env: Record<string, string | undefined> = {}): Record<string, string> {
+  type DefinitionEntry = Array<[string, string]>;
+
+  const createDefinition = (key: string, value: string): DefinitionEntry => {
+    return [
+      [`process.${key}`, value],
+      [`global.process.${key}`, value],
+      [`globalThis.process.${key}`, value],
+      [`import.meta.${key}`, value],
+    ];
+  };
+
+  return Object.fromEntries([
+    ...Object.entries(env).reduce(
+      (entries, [key, value]) => entries.concat(createDefinition(`env.${key}`, JSON.stringify(value))),
+      [] as DefinitionEntry,
+    ),
+    ...createDefinition(`env`, JSON.stringify(env)),
+  ]);
 }

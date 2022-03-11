@@ -10,6 +10,7 @@ import { cssModulesPlugin } from './plugins/css-modules-plugin';
 import { statsPlugin } from './plugins/stats-plugin';
 import { esmCompatPlugin } from './plugins/esm-compat-plugin';
 import { createTypeChecker } from './type-checker';
+import { defineEnv } from './load-env';
 
 /**
  * Bundle with ESBuild.
@@ -32,9 +33,7 @@ export async function bundle(ctx: BuildContext) {
     entryPoints: [await resolveEntry(ctx), await resolveEntry(ctx, { exts: ['css'], isOptional: true })].filter(
       Boolean,
     ) as string[],
-    define: Object.fromEntries(
-      Object.entries(ctx.define).map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]),
-    ),
+    define: defineEnv(ctx.define),
     watch: !!ctx.watch,
     metafile: true,
 
