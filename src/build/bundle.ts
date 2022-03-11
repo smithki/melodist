@@ -10,7 +10,7 @@ import { cssModulesPlugin } from './plugins/css-modules-plugin';
 import { statsPlugin } from './plugins/stats-plugin';
 import { esmCompatPlugin } from './plugins/esm-compat-plugin';
 import { createTypeChecker } from './type-checker';
-import { defineEnv } from './load-env';
+import { defineEnv } from './env';
 
 /**
  * Bundle with ESBuild.

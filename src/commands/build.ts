@@ -8,7 +8,7 @@ import {
   PositionalArgCollectionData,
 } from 'tweedle';
 import { bundle } from '../build/bundle';
-import { loadEnv } from '../build/load-env';
+import { loadEnv } from '../build/env';
 import { sayHello } from '../utils/say-hello';
 
 export interface BuildOptions extends FlagCollectionData {
