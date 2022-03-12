@@ -2,14 +2,14 @@ import esbuild from 'esbuild';
 import { resolveEntry, resolveOutDir } from './resolvers';
 import { getDefaultExternals } from './externals';
 import { BuildContext } from './types';
+import { defineEnv } from './env';
 
 // Plugins
-import { globalsPlugins } from './plugins/globals-plugin';
-import { cssPlugin } from './plugins/css-plugin';
-import { statsPlugin } from './plugins/stats-plugin';
-import { esmCompatPlugin } from './plugins/esm-compat-plugin';
+import { globalsPlugins } from './plugins/globals';
+import { cssPlugin } from './plugins/css';
+import { statsPlugin } from './plugins/stats';
+import { esmCompatPlugin } from './plugins/esm-compat';
 import { createTypeChecker } from './type-checker';
-import { defineEnv } from './env';
 
 /**
  * Bundle with ESBuild.
