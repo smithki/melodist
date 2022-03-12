@@ -98,7 +98,7 @@ function formatError(error: Message) {
  * definitions based on files resolved in the bundle.
  */
 export function statsPlugin(ctx: BuildContext): Plugin {
-  const namespace = `melodist.stats`;
+  const namespace = `melodist:stats`;
 
   return {
     name: namespace,

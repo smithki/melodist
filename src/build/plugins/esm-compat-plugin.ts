@@ -19,10 +19,8 @@ async function copyESMBundle(options: { filepath?: string }) {
  * If the ESM output extension is `.mjs`, copies ESM output to `.js`.
  */
 export function esmCompatPlugin(ctx: BuildContext): Plugin {
-  const namespace = `melodist.esm-compat`;
-
   return {
-    name: namespace,
+    name: 'melodist:esm-compat',
     setup: (build) => {
       build.onEnd(async (result) => {
         if (ctx.format === 'esm') {

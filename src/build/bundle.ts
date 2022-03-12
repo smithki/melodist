@@ -1,12 +1,11 @@
 import esbuild from 'esbuild';
-import chalk from 'chalk';
 import { resolveEntry, resolveOutDir } from './resolvers';
 import { getDefaultExternals } from './externals';
 import { BuildContext } from './types';
 
 // Plugins
 import { globalsPlugins } from './plugins/globals-plugin';
-import { cssModulesPlugin } from './plugins/css-modules-plugin';
+import { cssPlugin } from './plugins/css-plugin';
 import { statsPlugin } from './plugins/stats-plugin';
 import { esmCompatPlugin } from './plugins/esm-compat-plugin';
 import { createTypeChecker } from './type-checker';
@@ -37,6 +36,6 @@ export async function bundle(ctx: BuildContext) {
     watch: !!ctx.watch,
     metafile: true,
 
-    plugins: [...globalsPlugins(ctx), esmCompatPlugin(ctx), cssModulesPlugin(ctx), statsPlugin(ctx)].filter(Boolean),
+    plugins: [...globalsPlugins(ctx), esmCompatPlugin(ctx), cssPlugin(ctx), statsPlugin(ctx)].filter(Boolean),
   });
 }

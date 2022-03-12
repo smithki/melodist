@@ -40,13 +40,20 @@ function patchSourcemap(map: Buffer, outdir: string) {
   return Buffer.from(JSON.stringify(patchedMap));
 }
 
-async function handleCSS(options: { filename: string; outdir: string; watch?: boolean; sourcemap?: boolean }) {
+async function handleCSS(options: {
+  filename: string;
+  outdir: string;
+  minify?: boolean;
+  sourcemap?: boolean;
+  cssModules?: boolean;
+}) {
   const bundleOptions: BundleOptions = {
     filename: options.filename,
-    minify: !options.watch,
+    minify: !!options.minify,
     sourceMap: !!options.sourcemap,
-    cssModules: true,
+    cssModules: !!options.cssModules,
     analyzeDependencies: true,
+    drafts: { nesting: true },
   };
 
   const { code, map, exports: cssModuleExports = {}, dependencies = [] } = bundleCSS(bundleOptions);
@@ -60,52 +67,56 @@ async function handleCSS(options: { filename: string; outdir: string; watch?: bo
   });
 
   const cssModulesJSON: Record<string, string> = {};
+  if (options.cssModules) {
+    Object.keys(cssModuleExports).forEach((originalClass) => {
+      const className = cssModuleExports[originalClass].name;
+      const classNameHash = createHash('md5').update(`${options.filename}:${className}`).digest('hex').slice(0, 8);
+      cssModulesJSON[camelize(originalClass)] = classNameHash;
+      cssContent = cssContent.replace(new RegExp(`\\.${className}`, 'g'), `.${classNameHash}`);
+    });
+  }
 
-  Object.keys(cssModuleExports).forEach((originalClass) => {
-    const className = cssModuleExports[originalClass].name;
-    const classNameHash = createHash('md5').update(`${options.filename}:${className}`).digest('hex').slice(0, 8);
-    cssModulesJSON[camelize(originalClass)] = classNameHash;
-    cssContent = cssContent.replace(new RegExp(`\\.${className}`, 'g'), `.${classNameHash}`);
-  });
-
-  const jsContent = `export default ${JSON.stringify(cssModulesJSON)};`;
+  const jsContent = options.cssModules ? `export default ${JSON.stringify(cssModulesJSON)};` : 'export default {}';
 
   if (map) {
     const patchedMap = patchSourcemap(map, options.outdir);
     cssContent += `\n/*# sourceMappingURL=data:application/json;base64,${patchedMap.toString('base64')} */`;
   }
 
-  return { jsContent, cssContent };
+  return {
+    jsContent,
+    cssContent,
+  };
 }
 
 /**
- * Compiles `*.module.css` files as CSS modules.
+ * Compiles/optimizes `*.css` files using `@parcel/css`.
  */
-export function cssModulesPlugin(ctx: BuildContext): Plugin {
-  const namespace = 'melodist.css-modules';
-  const extractRegex = /\?melodist.css-modules$/;
+export function cssPlugin(ctx: BuildContext): Plugin {
+  const cssRegex = /\.css$/;
   const cssModulesRegex = /\.modules?\.css$/;
+  const extractNamespace = 'melodist.css-extract';
+  const extractRegex = /\?melodist.css-extract$/;
 
   return {
-    name: namespace,
+    name: 'melodist:css',
 
     async setup(build) {
-      const { watch, sourcemap } = build.initialOptions;
-
       const css = new Map<string, string>();
 
-      // Compile CSS modules
-      build.onLoad({ filter: cssModulesRegex }, async (args) => {
+      // Compile/optimize CSS
+      build.onLoad({ filter: cssRegex }, async (args) => {
         const { jsContent, cssContent } = await handleCSS({
           filename: args.path,
           outdir: await resolveOutDir(ctx),
-          watch: !!watch,
-          sourcemap: !!sourcemap,
+          minify: !ctx.watch && ctx.minify,
+          cssModules: cssModulesRegex.test(args.path),
+          sourcemap: ctx.sourcemap,
         });
 
         css.set(args.path, cssContent);
-        const jsFileContent = `import "${args.path}?${namespace}";\n${jsContent}`;
 
+        const jsFileContent = `import "${args.path}?${extractNamespace}";\n${jsContent}`;
         return {
           contents: jsFileContent,
           loader: 'js',
@@ -116,11 +127,11 @@ export function cssModulesPlugin(ctx: BuildContext): Plugin {
       build.onResolve({ filter: extractRegex }, (args) => {
         return {
           path: args.path,
-          namespace,
+          namespace: extractNamespace,
         };
       });
 
-      build.onLoad({ filter: extractRegex, namespace }, (args) => {
+      build.onLoad({ filter: extractRegex, namespace: extractNamespace }, (args) => {
         const cssContent = css.get(args.path.split('?')[0]);
         if (!cssContent) return null;
         return { contents: cssContent, loader: 'css' };
