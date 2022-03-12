@@ -1,7 +1,8 @@
 import { Plugin } from 'esbuild';
-import { bundle as bundleCSS, BundleOptions, UrlDependency } from '@parcel/css';
+import { bundle as bundleCSS, browserslistToTargets, BundleOptions, UrlDependency } from '@parcel/css';
 import { createHash } from 'crypto';
 import path from 'path';
+import browserslist from 'browserslist';
 import { BuildContext } from '../types';
 import { resolveOutDir } from '../resolvers';
 
@@ -54,6 +55,7 @@ async function handleCSS(options: {
     cssModules: !!options.cssModules,
     analyzeDependencies: true,
     drafts: { nesting: true },
+    targets: browserslistToTargets(browserslist('defaults')),
   };
 
   const { code, map, exports: cssModuleExports = {}, dependencies = [] } = bundleCSS(bundleOptions);
