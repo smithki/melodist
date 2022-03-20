@@ -18,7 +18,7 @@ function createLogger(label: string) {
 }
 
 function createRow(label: string, message: string) {
-  if (isCI) return `${label} ${message}`;
+  if (isCI || !process.stdout.isTTY) return `${label} ${message}`;
   const labelLength = stripAnsi(label).length + 1;
 
   const table = new Table({
