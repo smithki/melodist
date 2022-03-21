@@ -51,7 +51,7 @@ async function handleCSS(options: {
   sourcemap?: boolean;
   cssModules?: boolean;
 }) {
-  const parcelCSS = require('@parcel/css');
+  const parcelCSS = require('@parcel/css') as typeof import('@parcel/css');
 
   const bundleOptions: BundleOptions = {
     filename: options.filename,
@@ -63,11 +63,11 @@ async function handleCSS(options: {
     targets: parcelCSS.browserslistToTargets(browserslist('defaults')),
   };
 
-  const { code, map, exports: cssModuleExports = {}, dependencies = [] } = parcelCSS.bundleCSS(bundleOptions);
+  const { code, map, exports: cssModuleExports = {}, dependencies = [] } = parcelCSS.bundle(bundleOptions);
 
   let cssContent = code.toString('utf-8');
 
-  const urls = dependencies.filter((d: any) => d.type === 'url') as UrlDependency[];
+  const urls = dependencies.filter((d) => d.type === 'url') as UrlDependency[];
   const resolveDir = path.dirname(options.filename);
   urls.forEach(({ url, placeholder }) => {
     cssContent = cssContent.replace(new RegExp(`${placeholder}`, 'g'), getAbsoluteUrl(resolveDir, url));
