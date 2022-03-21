@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable global-require */
+
 import { Plugin } from 'esbuild';
-import { bundle as bundleCSS, browserslistToTargets, BundleOptions, UrlDependency } from '@parcel/css';
+import type { BundleOptions, UrlDependency } from '@parcel/css';
 import { createHash } from 'crypto';
 import path from 'path';
 import browserslist from 'browserslist';
@@ -48,6 +51,8 @@ async function handleCSS(options: {
   sourcemap?: boolean;
   cssModules?: boolean;
 }) {
+  const parcelCSS = require('@parcel/css');
+
   const bundleOptions: BundleOptions = {
     filename: options.filename,
     minify: !!options.minify,
@@ -55,14 +60,14 @@ async function handleCSS(options: {
     cssModules: !!options.cssModules,
     analyzeDependencies: true,
     drafts: { nesting: true },
-    targets: browserslistToTargets(browserslist('defaults')),
+    targets: parcelCSS.browserslistToTargets(browserslist('defaults')),
   };
 
-  const { code, map, exports: cssModuleExports = {}, dependencies = [] } = bundleCSS(bundleOptions);
+  const { code, map, exports: cssModuleExports = {}, dependencies = [] } = parcelCSS.bundleCSS(bundleOptions);
 
   let cssContent = code.toString('utf-8');
 
-  const urls = dependencies.filter((d) => d.type === 'url') as UrlDependency[];
+  const urls = dependencies.filter((d: any) => d.type === 'url') as UrlDependency[];
   const resolveDir = path.dirname(options.filename);
   urls.forEach(({ url, placeholder }) => {
     cssContent = cssContent.replace(new RegExp(`${placeholder}`, 'g'), getAbsoluteUrl(resolveDir, url));
