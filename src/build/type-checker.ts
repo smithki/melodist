@@ -1,11 +1,19 @@
 import { Project } from 'ts-morph';
 import { printVisualSeparator } from 'tweedle';
+import path from 'path';
 import { getProjectRoot } from '../utils/get-project-root';
 import { createWatcher } from '../utils/watcher';
 import { BuildContext } from './types';
 import { Logger } from '../utils/logger';
+import { checkFileExists } from '../utils/check-file-exists';
 
 export async function createTypeChecker(ctx: BuildContext) {
+  const tsconfigAbsolutePath = path.isAbsolute(ctx.tsconfig)
+    ? ctx.tsconfig
+    : path.join(await getProjectRoot(ctx.srcdir), ctx.tsconfig);
+
+  if (!(await checkFileExists(tsconfigAbsolutePath))) return;
+
   const project = new Project({
     compilerOptions: {
       declaration: true,
@@ -32,7 +40,7 @@ export async function createTypeChecker(ctx: BuildContext) {
       if (ctx.typecheck) {
         const changedPaths = events.map((evt) => evt.path);
         const allSourceFiles: string[] = project.getSourceFiles().map((file) => file.getFilePath());
-        const shouldRunTypeScriptDiagnostics = changedPaths.find((path) => allSourceFiles.includes(path));
+        const shouldRunTypeScriptDiagnostics = changedPaths.find((item) => allSourceFiles.includes(item));
 
         if (shouldRunTypeScriptDiagnostics) {
           Logger.typeCheck.info('File change detected; running type-checker...');

@@ -1,4 +1,4 @@
-# `melodist`
+# 📦 `melodist`
 
 > An opinionated bundler for creating TypeScript libraries.
 
@@ -18,7 +18,7 @@ yarn add -D melodist
 
 ## 📖 Documentation
 
-### Understanding `melodist` outputs
+### Making sense of `melodist` outputs
 
 `melodist` works in tandem with [ESBuild](https://esbuild.github.io/) and [TypeScript](https://www.typescriptlang.org/) to generate production-ready code bundles that are publishable to NPM, along with TypeScript definition files to support strongly-typed integrations by default.
 
@@ -28,14 +28,14 @@ A typical output looks like this:
 your_project/
 └── .melodist/
     │
-    │   # CommonJS modules
+    │   # CommonJS modules (with --format=cjs)
     ├── cjs/
     │   ├── index.js
     │   ├── index.js.map
     │   ├── [index.css]
     │   └── [index.css.map]
     │
-    │   # ES modules
+    │   # ES modules (with --format=esm)
     ├── esm/
     │   ├── index.js
     │   ├── index.js.map
@@ -44,12 +44,17 @@ your_project/
     │   ├── [index.css]
     │   └── [index.css.map]
     │
-    │   # Immediately-invoked function expression
+    │   # Immediately-invoked function expression (with --format=iife)
     ├── iife/
     │   ├── index.js
     │   ├── index.js.map
     │   ├── [index.css]
     │   └── [index.css.map]
+    │
+    │   # React Native modules (with --format=rn)
+    ├── rn/
+    │   ├── index.js
+    │   └── index.js.map
     │
     │   # TypeScript definitions
     └── types/
@@ -69,6 +74,9 @@ your_project/
   // TypeScript definition
   "types": ".melodist/types/index.d.ts",
 
+  // React Native output
+  "react-native": ".melodist/rn/index.js",
+
   // CDN entrypoint
   "jsdelivr": ".melodist/iife/index.js",
 
@@ -76,9 +84,9 @@ your_project/
   // "exports" field, for maximum compatibility
   "exports": {
     // ES modules output (using `.mjs` extension)
-    "import": "./dist/es/index.mjs",
+    "import": "./dist/esm/index.mjs",
     // CommonJS output (for redundancy)
-    // (this should stay synced with package.json#main)
+    // (this should be in-sync with package.json#main)
     "require": "./dist/cjs/index.js"
   }
 }
@@ -86,11 +94,12 @@ your_project/
 
 ### Entrypoints
 
-By default, `[srcdir]/index.{ts,tsx}` and/or `[srcdir]/index.css` is resolved as a starting point for bundling. However, each delivery format (**CommonJS modules**, **ES modules**, and **IIFE modules**) can define its own entrypoint using a filename identifier.
+By default, `[srcdir]/index.{ts,tsx}` and/or `[srcdir]/index.css` is resolved as a starting point for bundling. However, each delivery format (**CommonJS modules**, **ES modules**, **IIFE modules**, and **React Native**) can define its own entrypoint using a filename identifier.
 
 - **CommonJS**: `index.cjs.{ts,tsx,css}`
 - **ES**: `index.esm.{ts,tsx,css}`
 - **IIFE**: `index.iife.{ts,tsx,css}`
+- **React Native**: `index.rn.{ts,tsx,css}`
 
 ### Defining external dependencies
 

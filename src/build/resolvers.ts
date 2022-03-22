@@ -1,7 +1,6 @@
 import path from 'path';
 import { printError } from 'tweedle';
 import { checkFileExists } from '../utils/check-file-exists';
-import { getPackageJson } from '../utils/get-package-json';
 import { getProjectRoot } from '../utils/get-project-root';
 import { BuildContext } from './types';
 
@@ -27,7 +26,7 @@ export async function resolveEntry(
   ctx: BuildContext,
   options?: { exts?: string[]; isOptional?: boolean },
 ): Promise<string | undefined> {
-  const { exts = ['ts', 'tsx'], isOptional = false } = options ?? {};
+  const { exts = ['ts', 'tsx', 'js', 'jsx'], isOptional = false } = options ?? {};
   const key = `${ctx.format}:${exts.join(',')}`;
 
   if (entrypointCache.has(key)) {

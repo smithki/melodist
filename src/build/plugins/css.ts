@@ -104,11 +104,28 @@ export function cssPlugin(ctx: BuildContext): Plugin {
   const cssModulesRegex = /\.modules?\.css$/;
   const extractNamespace = 'melodist.css-extract';
   const extractRegex = /\?melodist.css-extract$/;
+  const skipNamespace = 'melodist.skip-css';
 
   return {
     name: 'melodist:css',
 
     async setup(build) {
+      // Skip CSS, if necessary
+      if (!ctx.css) {
+        build.onResolve({ filter: cssRegex }, (args) => {
+          return {
+            path: args.path,
+            namespace: skipNamespace,
+          };
+        });
+
+        build.onLoad({ filter: cssRegex, namespace: skipNamespace }, () => {
+          return null;
+        });
+
+        return;
+      }
+
       const css = new Map<string, string>();
 
       // Compile/optimize CSS
@@ -141,7 +158,10 @@ export function cssPlugin(ctx: BuildContext): Plugin {
       build.onLoad({ filter: extractRegex, namespace: extractNamespace }, (args) => {
         const cssContent = css.get(args.path.split('?')[0]);
         if (!cssContent) return null;
-        return { contents: cssContent, loader: 'css' };
+        return {
+          contents: cssContent,
+          loader: 'css',
+        };
       });
     },
   };

@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import type { Format, Platform } from 'esbuild';
+import type { Platform } from 'esbuild';
 import {
   createCommand,
   FlagCollection,
@@ -13,7 +13,7 @@ import { sayHello } from '../utils/say-hello';
 
 export interface BuildOptions extends FlagCollectionData {
   outdir: string;
-  format: Format[];
+  format: Array<'iife' | 'cjs' | 'esm' | 'rn'>;
   esTarget: string;
   platform: Platform;
   external?: string[];
@@ -40,6 +40,10 @@ export const flags: FlagCollection<BuildOptions> = {
     type: [String],
     description: 'A list of output formats that should be produced.',
     alias: 'f',
+    validate: (input) => {
+      const invalidInput = input.filter((item) => !['rn', 'cjs', 'esm', 'iife'].includes(item));
+      return `Format(s) must be some of: cjs, esm, iife, rn\nInvalid format(s) received: ${invalidInput.join(', ')}`;
+    },
     default: ['cjs', 'esm'],
   },
 
@@ -56,7 +60,7 @@ export const flags: FlagCollection<BuildOptions> = {
     default: 'neutral',
     validate: (input) => {
       if (!['browser', 'node', 'neutral'].includes(input)) {
-        return 'Platform must be one of: browser, node, neutral';
+        return `Platform must be one of: browser, node, neutral\nInvalid platform received: ${input}`;
       }
     },
   },
@@ -165,7 +169,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         watch,
         srcdir: data.srcdir,
         outdir: data.outdir,
-        platform: data.platform,
+        platform: format === 'iife' ? 'browser' : format === 'rn' ? 'node' : data.platform,
         external: format === 'iife' ? data['external:iife'] ?? data.external : data.external,
         global: data.global,
         name: data.name,
@@ -174,7 +178,9 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         typecheck: data.typecheck && i === 0,
         esTarget: data.esTarget,
         minify: data.minify,
-        format,
+        format: format === 'rn' ? 'cjs' : format,
+        mainFields: format === 'rn' ? ['react-native', 'main', 'module'] : undefined,
+        css: format !== 'rn',
         define,
       });
     }),

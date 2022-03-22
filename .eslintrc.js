@@ -11,6 +11,7 @@ module.exports = {
     // Core ESLint rules
     'no-alert': 0,
     'no-empty': 0,
+    'no-nested-ternary': 0,
     'consistent-return': 0,
     'no-underscore-dangle': 0,
     'class-methods-use-this': 0,

@@ -29,13 +29,13 @@ export async function bundle(ctx: BuildContext) {
     target: ctx.esTarget,
     minify: !ctx.watch && ctx.minify,
     globalName: ctx.name,
-    entryPoints: [await resolveEntry(ctx), await resolveEntry(ctx, { exts: ['css'], isOptional: true })].filter(
-      Boolean,
-    ) as string[],
+    entryPoints: [
+      await resolveEntry(ctx),
+      ctx.css && (await resolveEntry(ctx, { exts: ['css'], isOptional: true })),
+    ].filter(Boolean) as string[],
     define: defineEnv(ctx.define),
     watch: !!ctx.watch,
     metafile: true,
-
     plugins: [...globalsPlugins(ctx), esmCompatPlugin(ctx), cssPlugin(ctx), statsPlugin(ctx)].filter(Boolean),
   });
 }

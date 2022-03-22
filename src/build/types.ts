@@ -15,4 +15,6 @@ export interface BuildContext {
   tsconfig: string;
   typecheck?: boolean;
   minify: boolean;
+  mainFields?: string[];
+  css?: boolean;
 }
