@@ -26,7 +26,7 @@ async function dotenv(filepath: string): Promise<Record<string, string | undefin
     throw new Error(`Encountered a problem loading environment: ${err.message}`, { cause: err });
   }
 
-  return { ...process.env, ...parsed };
+  return { ...parsed };
 }
 
 /**
@@ -39,7 +39,7 @@ export async function loadEnv(env?: string): Promise<Record<string, string | und
 
     if (!(await checkFileExists(filepath))) {
       Logger.env.warn(chalk`Skipped environment (file doesn't exist: {cyan ${env}})`);
-      return { ...process.env };
+      return {};
     }
 
     return dotenv(filepath).then((result) => {
@@ -48,7 +48,7 @@ export async function loadEnv(env?: string): Promise<Record<string, string | und
     });
   }
 
-  return { ...process.env };
+  return {};
 }
 
 /**
