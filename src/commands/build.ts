@@ -42,7 +42,9 @@ export const flags: FlagCollection<BuildOptions> = {
     alias: 'f',
     validate: (input) => {
       const invalidInput = input.filter((item) => !['rn', 'cjs', 'esm', 'iife'].includes(item));
-      return `Format(s) must be some of: cjs, esm, iife, rn\nInvalid format(s) received: ${invalidInput.join(', ')}`;
+      return invalidInput.length
+        ? `Format(s) must be some of: cjs, esm, iife, rn\nInvalid format(s) received: ${invalidInput.join(', ')}`
+        : null;
     },
     default: ['cjs', 'esm'],
   },
