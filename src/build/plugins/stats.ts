@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import gzipSize from 'gzip-size';
 import brotliSize from 'brotli-size';
-import { printVisualSeparator } from 'tweedle';
+import { printVisualSeparator } from 'flik';
 import { resolveOutDir } from '../resolvers';
 import { BuildContext } from '../types';
 import { Logger } from '../../utils/logger';

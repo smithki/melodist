@@ -1,5 +1,5 @@
 import { Project } from 'ts-morph';
-import { printVisualSeparator } from 'tweedle';
+import { printVisualSeparator } from 'flik';
 import path from 'path';
 import { getProjectRoot } from '../utils/get-project-root';
 import { createWatcher } from '../utils/watcher';

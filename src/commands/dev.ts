@@ -1,4 +1,4 @@
-import { createCommand } from 'tweedle';
+import { createCommand } from 'flik';
 import { sayHello } from '../utils/say-hello';
 import { build, flags, positionalArgs } from './build';
 

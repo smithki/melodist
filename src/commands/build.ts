@@ -6,7 +6,7 @@ import {
   FlagCollectionData,
   PositionalArgCollection,
   PositionalArgCollectionData,
-} from 'tweedle';
+} from 'flik';
 import { bundle } from '../build/bundle';
 import { loadEnv } from '../build/env';
 import { sayHello } from '../utils/say-hello';

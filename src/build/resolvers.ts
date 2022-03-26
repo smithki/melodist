@@ -1,5 +1,5 @@
 import path from 'path';
-import { printError } from 'tweedle';
+import { printError } from 'flik';
 import { checkFileExists } from '../utils/check-file-exists';
 import { getProjectRoot } from '../utils/get-project-root';
 import { BuildContext } from './types';

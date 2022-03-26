@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { printVisualSeparator } from 'tweedle';
+import { printVisualSeparator } from 'flik';
 import { logSymbols } from './log-symbols';
 
 export function sayHello(cmd: string) {
