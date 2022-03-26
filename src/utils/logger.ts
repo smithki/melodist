@@ -1,19 +1,58 @@
+import { printVisualSeparator } from 'flik';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import stripAnsi from 'strip-ansi';
 import isCI from 'is-ci';
-import { logSymbols } from './log-symbols';
+import isUnicodeSupported from 'is-unicode-supported';
 
-function createLogger(label: string) {
+export const logSymbols = isUnicodeSupported()
+  ? {
+      info: 'ℹ',
+      wait: '◌',
+      complete: '◉',
+      success: '✔',
+      warning: '⚠',
+      error: '✖',
+      arrow: '➜',
+    }
+  : {
+      info: 'i',
+      wait: '□',
+      complete: '■',
+      success: '√',
+      warning: '‼',
+      error: '×',
+      arrow: '->',
+    };
+
+function createLogger(label: string, withLabelColor: chalk.Chalk) {
+  const colorfulLabel = withLabelColor(label);
+  const colorfulArrow = chalk.dim(logSymbols.arrow);
+
   return {
-    info: (message: string) =>
-      console.log(createRow(chalk`${logSymbols.info}  ${label} {dim ${logSymbols.arrow}}`, message)),
-    warn: (message: string) =>
-      console.warn(createRow(chalk`${logSymbols.warning}  ${label} {dim ${logSymbols.arrow}}`, message)),
-    success: (message: string) =>
-      console.log(createRow(chalk`${logSymbols.success}  ${label} {dim ${logSymbols.arrow}}`, message)),
-    error: (message: string) =>
-      console.error(createRow(chalk`${logSymbols.error}  ${label} {dim ${logSymbols.arrow}}`, message)),
+    info: (message: string) => {
+      console.log(createRow(chalk`{cyan ${logSymbols.info}}  ${colorfulLabel} ${colorfulArrow}`, message));
+    },
+
+    wait: (message: string) => {
+      console.log(createRow(chalk`${withLabelColor(logSymbols.wait)}  ${colorfulLabel} ${colorfulArrow}`, message));
+    },
+
+    complete: (message: string) => {
+      console.log(createRow(chalk`${withLabelColor(logSymbols.complete)}  ${colorfulLabel} ${colorfulArrow}`, message));
+    },
+
+    warn: (message: string) => {
+      console.warn(createRow(chalk`{yellow ${logSymbols.warning}}  ${colorfulLabel} ${colorfulArrow}`, message));
+    },
+
+    success: (message: string) => {
+      console.log(createRow(chalk`{green ${logSymbols.success}}  ${colorfulLabel} ${colorfulArrow}`, message));
+    },
+
+    error: (message: string) => {
+      console.error(createRow(chalk`{red ${logSymbols.error}}  ${colorfulLabel} ${colorfulArrow}`, message));
+    },
   };
 }
 
@@ -52,7 +91,12 @@ function createRow(label: string, message: string) {
 }
 
 export const Logger = {
-  env: createLogger(chalk`{cyan env}`),
-  bundle: createLogger(chalk`{blueBright bundle}`),
-  typeCheck: createLogger(chalk`{magenta type-check}`),
+  env: createLogger('env', chalk.cyan),
+  bundle: createLogger('bundle', chalk.blueBright),
+  typeCheck: createLogger('type-check', chalk.magenta),
 };
+
+export function sayHello(cmd: string) {
+  console.log(chalk`🎹 ${logSymbols.arrow} {cyan.italic ${cmd}}`);
+  printVisualSeparator();
+}

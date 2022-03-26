@@ -24,7 +24,7 @@ export async function createTypeChecker(ctx: BuildContext) {
   });
 
   if (ctx.typecheck) {
-    Logger.typeCheck.info('Running type-checker...');
+    Logger.typeCheck.wait('Running type-checker...');
     await runTypeScriptDiagnostics(project);
   }
 
@@ -43,7 +43,7 @@ export async function createTypeChecker(ctx: BuildContext) {
         const shouldRunTypeScriptDiagnostics = changedPaths.find((item) => allSourceFiles.includes(item));
 
         if (shouldRunTypeScriptDiagnostics) {
-          Logger.typeCheck.info('File change detected; running type-checker...');
+          Logger.typeCheck.wait('File change detected; running type-checker...');
           await runTypeScriptDiagnostics(project);
         }
       }
@@ -64,6 +64,6 @@ async function runTypeScriptDiagnostics(project: Project) {
     console.error(project.formatDiagnosticsWithColorAndContext(diagnostics));
     printVisualSeparator();
   } else {
-    Logger.typeCheck.success('No type errors found.');
+    Logger.typeCheck.complete('No type errors found.');
   }
 }

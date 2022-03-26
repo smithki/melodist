@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import { parse as parseDotenvFile, DotenvParseOutput, DotenvConfigOutput } from 'dotenv';
-import { expand } from 'dotenv-expand';
+import { parse as parseDotenvFile, DotenvParseOutput } from 'dotenv';
+import { DotenvExpandOptions, expand } from 'dotenv-expand';
 import fs from 'fs';
 import path from 'path';
 import { checkFileExists } from '../utils/check-file-exists';
@@ -11,7 +11,7 @@ async function dotenv(filepath: string): Promise<Record<string, string | undefin
   const parsed: DotenvParseOutput = {};
 
   try {
-    let result: DotenvConfigOutput = {};
+    let result: DotenvExpandOptions = { ignoreProcessEnv: false };
     const envFileContents = await fs.promises.readFile(filepath, 'utf8');
     result.parsed = parseDotenvFile(envFileContents);
 
@@ -23,7 +23,8 @@ async function dotenv(filepath: string): Promise<Record<string, string | undefin
       }
     }
   } catch (err: any) {
-    throw new Error(`Encountered a problem loading environment: ${err.message}`, { cause: err });
+    Logger.env.error(err.message);
+    process.exit(1);
   }
 
   return { ...parsed };

@@ -1,5 +1,5 @@
 import { createCommand } from 'flik';
-import { sayHello } from '../utils/say-hello';
+import { sayHello } from '../utils/logger';
 import { build, flags, positionalArgs } from './build';
 
 export default createCommand(

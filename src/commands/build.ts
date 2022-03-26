@@ -9,7 +9,7 @@ import {
 } from 'flik';
 import { bundle } from '../build/bundle';
 import { loadEnv } from '../build/env';
-import { sayHello } from '../utils/say-hello';
+import { sayHello } from '../utils/logger';
 
 export interface BuildOptions extends FlagCollectionData {
   outdir: string;
