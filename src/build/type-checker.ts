@@ -1,5 +1,5 @@
 import { Project } from 'ts-morph';
-import { printVisualSeparator } from 'flik';
+import { Logger as FlikLogger } from 'flik';
 import path from 'path';
 import { getProjectRoot } from '../utils/get-project-root';
 import { createWatcher } from '../utils/watcher';
@@ -60,9 +60,9 @@ async function runTypeScriptDiagnostics(project: Project) {
 
   if (diagnostics.length) {
     Logger.typeCheck.error('Found type errors:');
-    printVisualSeparator();
+    FlikLogger.visualSeparator();
     console.error(project.formatDiagnosticsWithColorAndContext(diagnostics));
-    printVisualSeparator();
+    FlikLogger.visualSeparator();
   } else {
     Logger.typeCheck.complete('No type errors found.');
   }

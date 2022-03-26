@@ -1,7 +1,7 @@
 import path from 'path';
-import { printError } from 'flik';
 import { checkFileExists } from '../utils/check-file-exists';
 import { getProjectRoot } from '../utils/get-project-root';
+import { Logger } from '../utils/logger';
 import { BuildContext } from './types';
 
 const entrypointCache = new Map<string, string>();
@@ -48,7 +48,7 @@ export async function resolveEntry(
   const entrypoint = checks.find(Boolean);
 
   if (!entrypoint && !isOptional) {
-    printError(new Error('Could not resolve entrypoint.'));
+    Logger.bundle.error('Could not resolve entrypoint.');
     process.exit(1);
   }
 

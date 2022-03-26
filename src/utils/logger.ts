@@ -1,4 +1,4 @@
-import { printVisualSeparator } from 'flik';
+import { Logger as FlikLogger } from 'flik';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import stripAnsi from 'strip-ansi';
@@ -98,5 +98,5 @@ export const Logger = {
 
 export function sayHello(cmd: string) {
   console.log(chalk`🎹 ${logSymbols.arrow} {cyan.italic ${cmd}}`);
-  printVisualSeparator();
+  FlikLogger.visualSeparator();
 }

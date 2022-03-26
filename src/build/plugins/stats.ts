@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import prettyBytes from 'pretty-bytes';
 import gzipSize from 'gzip-size';
 import brotliSize from 'brotli-size';
-import { printVisualSeparator } from 'flik';
+import { Logger as FlikLogger } from 'flik';
 import { resolveOutDir } from '../resolvers';
 import { BuildContext } from '../types';
 import { Logger } from '../../utils/logger';
@@ -64,12 +64,12 @@ async function getSizeInfo(code: string) {
 
 async function reportErrors(ctx: BuildContext, errors: Message[]) {
   Logger.bundle.error(chalk`{red Build failed} ({cyan ${ctx.format}})`);
-  printVisualSeparator();
+  FlikLogger.visualSeparator();
   errors.forEach((err) => {
     console.error(formatError(err));
-    printVisualSeparator();
+    FlikLogger.visualSeparator();
   });
-  printVisualSeparator();
+  FlikLogger.visualSeparator();
 }
 
 function formatError(error: Message) {
