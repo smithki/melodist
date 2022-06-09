@@ -22,7 +22,7 @@
   "dependencies": {
     "@parcel/css": "~1.5.0",
     "@parcel/watcher": "~2.0.5",
-    "esbuild": "~0.14.25",
+    "esbuild": "~0.14.43",
     "ts-morph": "~14.0.0"
   },
   "devDependencies": {
