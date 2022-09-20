@@ -66,28 +66,28 @@ your_project/
 ```js
 {
   // CommonJS output
-  "main": ".melodist/cjs/index.js",
+  "main": "./.melodist/cjs/index.js",
 
   // ES modules output (legacy)
-  "module": ".melodist/esm/index.js",
+  "module": "./.melodist/esm/index.js",
 
   // TypeScript definition
-  "types": ".melodist/types/index.d.ts",
+  "types": "./.melodist/types/index.d.ts",
 
   // React Native output
-  "react-native": ".melodist/rn/index.js",
+  "react-native": "./.melodist/rn/index.js",
 
   // CDN entrypoint
-  "jsdelivr": ".melodist/iife/index.js",
+  "jsdelivr": "./.melodist/iife/index.js",
 
   // You can also define a standard NodeJS
   // "exports" field, for maximum compatibility
   "exports": {
     // ES modules output (using `.mjs` extension)
-    "import": "./dist/esm/index.mjs",
+    "import": "./.melodist/esm/index.mjs",
     // CommonJS output (for redundancy)
     // (this should be in-sync with package.json#main)
-    "require": "./dist/cjs/index.js"
+    "require": "./.melodist/cjs/index.js"
   }
 }
 ```
