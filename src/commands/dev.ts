@@ -6,12 +6,14 @@ export default createCommand(
   {
     command: 'dev',
     description: 'Development command',
-    flags,
-    positionalArgs,
+    inputs: { flags, positionalArgs },
   },
 
-  async ({ data }) => {
+  async ({ data, addShutdownTask }) => {
     sayHello('dev');
-    await build({ data, watch: true });
+    const cleanups = await build({ data, watch: true });
+    addShutdownTask(async () => {
+      await Promise.all(cleanups);
+    });
   },
 );

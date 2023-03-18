@@ -1,7 +1,7 @@
-import esbuild from 'esbuild';
+import esbuild, { build, BuildOptions } from 'esbuild';
 import { resolveEntry, resolveOutDir } from './resolvers';
 import { getDefaultExternals } from './externals';
-import { MelodistContext } from './types';
+import { DisposeFunction, MelodistContext } from './types';
 import { defineEnv } from './env';
 import { createTypeChecker } from './type-checker';
 
@@ -15,10 +15,10 @@ import { statsPlugin } from './plugins/stats';
 /**
  * Bundle with ESBuild.
  */
-export async function bundle(ctx: MelodistContext) {
+export async function bundle(ctx: MelodistContext): Promise<DisposeFunction> {
   await createTypeChecker(ctx);
 
-  await esbuild.build({
+  const buildContext = await esbuild.context<BuildOptions>({
     outdir: await resolveOutDir(ctx),
     entryNames: '[dir]/index',
     platform: ctx.platform,
@@ -35,10 +35,17 @@ export async function bundle(ctx: MelodistContext) {
       ctx.css && (await resolveEntry(ctx, { exts: ['css'], isOptional: true })),
     ].filter(Boolean) as string[],
     define: defineEnv(ctx.define),
-    watch: !!ctx.watch,
     metafile: true,
     plugins: [...globalsPlugins(ctx), esmCompatPlugin(ctx), cssPlugin(ctx), statsPlugin(ctx), globImport()].filter(
       Boolean,
     ),
   });
+
+  if (ctx.watch) {
+    await buildContext.watch();
+  } else {
+    await buildContext.rebuild();
+  }
+
+  return buildContext.dispose;
 }

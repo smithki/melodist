@@ -1,7 +1,8 @@
 #!/usr/bin/env ts-node-script
 
-import { build } from 'esbuild';
+import esbuild, { BuildOptions } from 'esbuild';
 import { Project } from 'ts-morph';
+import path from 'path';
 
 const isWatchMode = process.argv.includes('--watch');
 
@@ -33,7 +34,7 @@ async function checkTypes() {
   await checkTypes();
 
   // Bundle with ESBuild
-  await build({
+  const buildContext = await esbuild.context<BuildOptions>({
     entryPoints: ['src/index.ts'],
     outdir: 'dist',
     bundle: true,
@@ -43,23 +44,34 @@ async function checkTypes() {
     format: 'cjs',
     external: ['esbuild', 'ts-morph', 'lightningcss', '@parcel/watcher'],
     sourcemap: true,
-    watch: isWatchMode
-      ? {
-          onRebuild: async (error: Error) => {
-            if (error) {
-              console.error('watch build failed:', error);
-            } else {
-              console.clear();
-              await Promise.all(project.getSourceFiles().map((sourceFile) => sourceFile.refreshFromFileSystem()));
-              await checkTypes();
-              console.log('⚡️ Built');
+    plugins: [
+      {
+        name: 'on-rebuild',
+        setup(build) {
+          build.onEnd(async (result) => {
+            if (isWatchMode) {
+              if (result.errors.length) {
+                console.error('watch build failed:', result.errors);
+              } else {
+                console.clear();
+                await Promise.all(project.getSourceFiles().map((sourceFile) => sourceFile.refreshFromFileSystem()));
+                await checkTypes();
+                console.log('⚡️ Built');
+              }
             }
-          },
-        }
-      : undefined,
+          });
+        },
+      },
+    ],
   });
 
-  console.log('⚡️ Built');
+  if (isWatchMode) {
+    await buildContext.watch();
+  } else {
+    await buildContext.rebuild();
+    await buildContext.dispose();
+    console.log('⚡️ Built');
+  }
 })().catch((err) => {
   console.error(err);
   process.exit(1);

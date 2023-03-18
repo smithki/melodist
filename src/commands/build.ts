@@ -1,17 +1,11 @@
 import chalk from 'chalk';
 import type { Platform } from 'esbuild';
-import {
-  createCommand,
-  FlagCollection,
-  FlagCollectionData,
-  PositionalArgCollection,
-  PositionalArgCollectionData,
-} from 'flik';
+import { createCommand, Inputs } from 'flik';
 import { bundle } from '../build/bundle';
 import { loadEnv } from '../build/env';
 import { sayHello } from '../utils/logger';
 
-export interface BuildOptions extends FlagCollectionData {
+export interface BuildOptions extends Inputs.FlagData {
   outdir: string;
   format: Array<'iife' | 'cjs' | 'esm' | 'rn'>;
   esTarget: string;
@@ -28,7 +22,7 @@ export interface BuildOptions extends FlagCollectionData {
   minify: boolean;
 }
 
-export const flags: FlagCollection<BuildOptions> = {
+export const flags: Inputs.FlagCollection<BuildOptions> = {
   outdir: {
     type: String,
     description: 'Directory where output shall be placed.',
@@ -133,11 +127,11 @@ export const flags: FlagCollection<BuildOptions> = {
   },
 };
 
-export interface BuildArgs extends PositionalArgCollectionData {
+export interface BuildArgs extends Inputs.PositionalArgData {
   srcdir: string;
 }
 
-export const positionalArgs: PositionalArgCollection<BuildArgs> = {
+export const positionalArgs: Inputs.PositionalArgCollection<BuildArgs> = {
   srcdir: {
     description: 'Directory where input shall be consumed from.',
     default: './src',
@@ -148,14 +142,20 @@ export default createCommand(
   {
     command: 'build',
     description: 'Build command',
-    flags,
-    positionalArgs,
+    inputs: { flags, positionalArgs },
     examples: ['test one two three'],
   },
 
-  async ({ data, shutdown }) => {
+  async ({ data, shutdown, addShutdownTask }) => {
     sayHello('build');
-    await build({ data }).catch(() => shutdown(1));
+    try {
+      const cleanups = await build({ data });
+      addShutdownTask(async () => {
+        await Promise.all(cleanups);
+      });
+    } catch {
+      shutdown(1);
+    }
     shutdown();
   },
 );
@@ -165,7 +165,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
 
   const define = await loadEnv(data.env);
 
-  await Promise.all(
+  return Promise.all(
     data.format.map(async (format, i) => {
       return bundle({
         watch,

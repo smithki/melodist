@@ -18,3 +18,7 @@ export interface MelodistContext {
   mainFields?: string[];
   css?: boolean;
 }
+
+export interface DisposeFunction {
+  (): Promise<void>;
+}
