@@ -1,6 +1,6 @@
 import { Format, Platform } from 'esbuild';
 
-export interface BuildContext {
+export interface MelodistContext {
   platform: Platform;
   external?: string[];
   format: Format;

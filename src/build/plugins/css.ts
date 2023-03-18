@@ -2,11 +2,11 @@
 /* eslint-disable global-require */
 
 import { Plugin } from 'esbuild';
-import type { BundleOptions, UrlDependency } from '@parcel/css';
+import type { BundleOptions, CustomAtRules, UrlDependency } from 'lightningcss';
 import { createHash } from 'crypto';
 import path from 'path';
 import browserslist from 'browserslist';
-import { BuildContext } from '../types';
+import { MelodistContext } from '../types';
 import { resolveOutDir } from '../resolvers';
 
 function camelize(str: string) {
@@ -51,9 +51,9 @@ async function handleCSS(options: {
   sourcemap?: boolean;
   cssModules?: boolean;
 }) {
-  const parcelCSS = require('@parcel/css') as typeof import('@parcel/css');
+  const parcelCSS = require('lightningcss') as typeof import('lightningcss');
 
-  const bundleOptions: BundleOptions = {
+  const bundleOptions: BundleOptions<CustomAtRules> = {
     filename: options.filename,
     minify: !!options.minify,
     sourceMap: !!options.sourcemap,
@@ -99,7 +99,7 @@ async function handleCSS(options: {
 /**
  * Compiles/optimizes `*.css` files using `@parcel/css`.
  */
-export function cssPlugin(ctx: BuildContext): Plugin {
+export function cssPlugin(ctx: MelodistContext): Plugin {
   const cssRegex = /\.css$/;
   const cssModulesRegex = /\.modules?\.css$/;
   const extractNamespace = 'melodist.css-extract';

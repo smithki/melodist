@@ -9,13 +9,13 @@ import gzipSize from 'gzip-size';
 import brotliSize from 'brotli-size';
 import { Logger as FlikLogger } from 'flik';
 import { resolveOutDir } from '../resolvers';
-import { BuildContext } from '../types';
+import { MelodistContext } from '../types';
 import { Logger } from '../../utils/logger';
 
 /**
  * Prints the size of the output file(s) produced by ESBuild.
  */
-async function printOutputSizeInfo(ctx: BuildContext, options: { filepaths?: Array<string | undefined> }) {
+async function printOutputSizeInfo(ctx: MelodistContext, options: { filepaths?: Array<string | undefined> }) {
   const { filepaths = [] } = options;
   if (!filepaths.length) return;
 
@@ -62,7 +62,7 @@ async function getSizeInfo(code: string) {
   return [formatSize(gzip, 'gz'), formatSize(brotli, 'br')].join(chalk.gray(' / '));
 }
 
-async function reportErrors(ctx: BuildContext, errors: Message[]) {
+async function reportErrors(ctx: MelodistContext, errors: Message[]) {
   Logger.bundle.error(chalk`{red Build failed} ({cyan ${ctx.format}})`);
   FlikLogger.visualSeparator();
   errors.forEach((err) => {
@@ -97,7 +97,7 @@ function formatError(error: Message) {
  * Perform type-checking and generate type
  * definitions based on files resolved in the bundle.
  */
-export function statsPlugin(ctx: BuildContext): Plugin {
+export function statsPlugin(ctx: MelodistContext): Plugin {
   const namespace = `melodist:stats`;
 
   return {

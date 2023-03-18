@@ -1,5 +1,5 @@
 import { start } from 'flik';
-import { getVersion } from './utils/getVersion';
+import { getVersion } from './utils/get-version';
 
 // Commands
 import buildCommand from './commands/build';

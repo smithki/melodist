@@ -2,7 +2,7 @@ import path from 'path';
 import { checkFileExists } from '../utils/check-file-exists';
 import { getProjectRoot } from '../utils/get-project-root';
 import { Logger } from '../utils/logger';
-import { BuildContext } from './types';
+import { MelodistContext } from './types';
 
 const entrypointCache = new Map<string, string>();
 
@@ -10,20 +10,20 @@ const entrypointCache = new Map<string, string>();
  * Resolves the entrypoint file for ESBuild,
  * based on the format and target platform.
  */
-export async function resolveEntry(ctx: BuildContext): Promise<string>;
+export async function resolveEntry(ctx: MelodistContext): Promise<string>;
 
 export async function resolveEntry(
-  ctx: BuildContext,
+  ctx: MelodistContext,
   options: { exts?: string[]; isOptional?: false },
 ): Promise<string>;
 
 export async function resolveEntry(
-  ctx: BuildContext,
+  ctx: MelodistContext,
   options?: { exts?: string[]; isOptional: true },
 ): Promise<string | undefined>;
 
 export async function resolveEntry(
-  ctx: BuildContext,
+  ctx: MelodistContext,
   options?: { exts?: string[]; isOptional?: boolean },
 ): Promise<string | undefined> {
   const { exts = ['ts', 'tsx', 'js', 'jsx'], isOptional = false } = options ?? {};
@@ -62,7 +62,7 @@ export async function resolveEntry(
 /**
  * Get a formatted, destination outfile.
  */
-export async function resolveOutDir(ctx: BuildContext) {
+export async function resolveOutDir(ctx: MelodistContext) {
   const projectRoot = await getProjectRoot(ctx.srcdir);
   return path.join(projectRoot, ctx.outdir, ctx.format);
 }

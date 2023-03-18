@@ -14,9 +14,8 @@ export async function getProjectRoot(cwd: string = process.cwd()) {
   } catch (err) {
     cache.delete(cwd);
     throw err;
-  } finally {
-    cache.set(cwd, result);
   }
 
+  cache.set(cwd, result);
   return result;
 }

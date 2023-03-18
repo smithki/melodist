@@ -1,20 +1,21 @@
 import esbuild from 'esbuild';
 import { resolveEntry, resolveOutDir } from './resolvers';
 import { getDefaultExternals } from './externals';
-import { BuildContext } from './types';
+import { MelodistContext } from './types';
 import { defineEnv } from './env';
+import { createTypeChecker } from './type-checker';
 
 // Plugins
-import { globalsPlugins } from './plugins/globals';
 import { cssPlugin } from './plugins/css';
-import { statsPlugin } from './plugins/stats';
 import { esmCompatPlugin } from './plugins/esm-compat';
-import { createTypeChecker } from './type-checker';
+import { globImport } from './plugins/glob-import';
+import { globalsPlugins } from './plugins/globals';
+import { statsPlugin } from './plugins/stats';
 
 /**
  * Bundle with ESBuild.
  */
-export async function bundle(ctx: BuildContext) {
+export async function bundle(ctx: MelodistContext) {
   await createTypeChecker(ctx);
 
   await esbuild.build({
@@ -36,6 +37,8 @@ export async function bundle(ctx: BuildContext) {
     define: defineEnv(ctx.define),
     watch: !!ctx.watch,
     metafile: true,
-    plugins: [...globalsPlugins(ctx), esmCompatPlugin(ctx), cssPlugin(ctx), statsPlugin(ctx)].filter(Boolean),
+    plugins: [...globalsPlugins(ctx), esmCompatPlugin(ctx), cssPlugin(ctx), statsPlugin(ctx), globImport()].filter(
+      Boolean,
+    ),
   });
 }

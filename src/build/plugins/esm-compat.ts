@@ -1,7 +1,7 @@
 import { Plugin } from 'esbuild';
 import fs from 'fs';
 import path from 'path';
-import { BuildContext } from '../types';
+import { MelodistContext } from '../types';
 
 async function copyESMBundle(options: { filepath?: string }) {
   const { filepath } = options;
@@ -18,7 +18,7 @@ async function copyESMBundle(options: { filepath?: string }) {
  * If the ESM output extension is `.js`, copies ESM output to `.mjs`.
  * If the ESM output extension is `.mjs`, copies ESM output to `.js`.
  */
-export function esmCompatPlugin(ctx: BuildContext): Plugin {
+export function esmCompatPlugin(ctx: MelodistContext): Plugin {
   return {
     name: 'melodist:esm-compat',
     setup: (build) => {

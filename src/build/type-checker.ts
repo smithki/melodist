@@ -3,11 +3,11 @@ import { Logger as FlikLogger } from 'flik';
 import path from 'path';
 import { getProjectRoot } from '../utils/get-project-root';
 import { createWatcher } from '../utils/watcher';
-import { BuildContext } from './types';
+import { MelodistContext } from './types';
 import { Logger } from '../utils/logger';
 import { checkFileExists } from '../utils/check-file-exists';
 
-export async function createTypeChecker(ctx: BuildContext) {
+export async function createTypeChecker(ctx: MelodistContext) {
   const tsconfigAbsolutePath = path.isAbsolute(ctx.tsconfig)
     ? ctx.tsconfig
     : path.join(await getProjectRoot(ctx.srcdir), ctx.tsconfig);

@@ -41,11 +41,11 @@ async function checkTypes() {
     target: 'es6',
     platform: 'node',
     format: 'cjs',
-    external: ['esbuild', 'ts-morph', '@parcel/css', '@parcel/watcher'],
+    external: ['esbuild', 'ts-morph', 'lightningcss', '@parcel/watcher'],
     sourcemap: true,
     watch: isWatchMode
       ? {
-          onRebuild: async (error) => {
+          onRebuild: async (error: Error) => {
             if (error) {
               console.error('watch build failed:', error);
             } else {

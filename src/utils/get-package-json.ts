@@ -23,9 +23,8 @@ export async function getPackageJson(cwd: string): Promise<Record<string, any>> 
   } catch (err) {
     cache.delete(cwd);
     throw err;
-  } finally {
-    cache.set(cwd, result);
   }
 
+  cache.set(cwd, result);
   return result;
 }

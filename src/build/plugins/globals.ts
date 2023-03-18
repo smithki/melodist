@@ -1,11 +1,11 @@
 import { Plugin } from 'esbuild';
-import { BuildContext } from '../types';
+import { MelodistContext } from '../types';
 
 /**
  * Creates a list of plugins to replace
  * externalized packages with a global variable.
  */
-export function globalsPlugins(ctx: BuildContext): Plugin[] {
+export function globalsPlugins(ctx: MelodistContext): Plugin[] {
   const globals: Record<string, string> = Object.fromEntries(ctx.global.map((g) => g.split('='))) || {};
 
   return Object.entries(globals).map(([packageName, globalVar]) => {
