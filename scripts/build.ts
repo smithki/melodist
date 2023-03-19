@@ -2,7 +2,6 @@
 
 import esbuild, { BuildOptions } from 'esbuild';
 import { Project } from 'ts-morph';
-import path from 'path';
 
 const isWatchMode = process.argv.includes('--watch');
 

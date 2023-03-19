@@ -25,7 +25,7 @@ function getAbsoluteUrl(resolveDir: string, url: string) {
 }
 
 /**
- * The sourcemap created by `@parcel/css` needs some slight tweaking to be
+ * The sourcemap created by `lightningcss` needs some slight tweaking to be
  * consistent with sourcemaps created by ESBuild:
  *   - Resolve `sources` to the configured `outdir`
  *   - Convert `sources` to absolute paths.
