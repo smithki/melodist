@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { parse as parseDotenvFile, DotenvParseOutput } from 'dotenv';
 import { DotenvExpandOptions, expand } from 'dotenv-expand';
+import { shutdown } from 'flik';
 import fs from 'fs';
 import path from 'path';
 import { checkFileExists } from '../utils/check-file-exists';
@@ -24,7 +25,7 @@ async function dotenv(filepath: string): Promise<Record<string, string | undefin
     }
   } catch (err: any) {
     Logger.env.error(err.message);
-    process.exit(1);
+    await shutdown(1);
   }
 
   return { ...parsed };

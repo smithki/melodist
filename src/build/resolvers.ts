@@ -1,3 +1,4 @@
+import { shutdown } from 'flik';
 import path from 'path';
 import { checkFileExists } from '../utils/check-file-exists';
 import { getProjectRoot } from '../utils/get-project-root';
@@ -49,7 +50,7 @@ export async function resolveEntry(
 
   if (!entrypoint && !isOptional) {
     Logger.bundle.error('Could not resolve entrypoint.');
-    process.exit(1);
+    await shutdown(1);
   }
 
   if (entrypoint) {
