@@ -154,9 +154,9 @@ export default createCommand(
         await Promise.all(cleanups);
       });
     } catch {
-      shutdown(1);
+      await shutdown(1);
     }
-    shutdown();
+    await shutdown();
   },
 );
 
