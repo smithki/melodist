@@ -9,11 +9,12 @@ export default createCommand(
     inputs: { flags, positionalArgs },
   },
 
-  async ({ data, addShutdownTask }) => {
+  async ({ data, addShutdownTask, keepAlive }) => {
     sayHello('dev');
     const cleanups = await build({ data, watch: true });
     addShutdownTask(async () => {
       await Promise.all(cleanups);
     });
+    return keepAlive;
   },
 );
