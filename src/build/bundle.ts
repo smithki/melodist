@@ -1,5 +1,5 @@
-import esbuild, { build, BuildOptions } from 'esbuild';
-import { resolveEntry, resolveOutDir } from './resolvers';
+import esbuild, { BuildOptions } from 'esbuild';
+import { resolveEntryPoint, resolveOutDir } from './resolvers';
 import { getDefaultExternals } from './externals';
 import { DisposeFunction, MelodistContext } from './types';
 import { defineEnv } from './env';
@@ -31,8 +31,8 @@ export async function bundle(ctx: MelodistContext): Promise<DisposeFunction> {
     minify: !ctx.watch && ctx.minify,
     globalName: ctx.name,
     entryPoints: [
-      await resolveEntry(ctx),
-      ctx.css && (await resolveEntry(ctx, { exts: ['css'], isOptional: true })),
+      await resolveEntryPoint(ctx, { exts: ['ts', 'tsx', 'js', 'jsx'], isOptional: false }),
+      ctx.css && (await resolveEntryPoint(ctx, { exts: ['css'], isOptional: true })),
     ].filter(Boolean) as string[],
     define: defineEnv(ctx.define),
     metafile: true,

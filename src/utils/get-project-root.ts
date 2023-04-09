@@ -10,7 +10,9 @@ export async function getProjectRoot(cwd: string = process.cwd()) {
 
   try {
     const pkgJson = await findUp('package.json', { cwd });
-    if (pkgJson) result = path.dirname(pkgJson);
+    if (pkgJson) {
+      result = path.dirname(pkgJson);
+    }
   } catch (err) {
     cache.delete(cwd);
     throw err;

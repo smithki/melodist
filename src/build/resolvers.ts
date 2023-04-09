@@ -5,33 +5,21 @@ import { getProjectRoot } from '../utils/get-project-root';
 import { Logger } from '../utils/logger';
 import { MelodistContext } from './types';
 
-const entrypointCache = new Map<string, string>();
+const entryPointCache = new Map<string, string>();
 
 /**
  * Resolves the entrypoint file for ESBuild,
  * based on the format and target platform.
  */
-export async function resolveEntry(ctx: MelodistContext): Promise<string>;
-
-export async function resolveEntry(
-  ctx: MelodistContext,
-  options: { exts?: string[]; isOptional?: false },
-): Promise<string>;
-
-export async function resolveEntry(
-  ctx: MelodistContext,
-  options?: { exts?: string[]; isOptional: true },
-): Promise<string | undefined>;
-
-export async function resolveEntry(
+export async function resolveEntryPoint(
   ctx: MelodistContext,
   options?: { exts?: string[]; isOptional?: boolean },
 ): Promise<string | undefined> {
-  const { exts = ['ts', 'tsx', 'js', 'jsx'], isOptional = false } = options ?? {};
+  const { exts = [], isOptional = false } = options ?? {};
   const key = `${ctx.format}:${exts.join(',')}`;
 
-  if (entrypointCache.has(key)) {
-    return entrypointCache.get(key)!;
+  if (entryPointCache.has(key)) {
+    return entryPointCache.get(key)!;
   }
 
   const checkExists = async (filepath: string) => {
@@ -39,25 +27,31 @@ export async function resolveEntry(
   };
 
   const checks = await Promise.all([
-    // Check if `index.{format}.{ext}` exists...
+    // `{srcdir}/index.{format}.{ext}`
     ...exts.map(async (ext) => checkExists(`${ctx.srcdir}/index.${ctx.format}.${ext}`)),
 
-    // Then fallback to `index.{ext}` if it doesn't...
+    // `{srcdir}/index.{ext}`
     ...exts.map(async (ext) => checkExists(`${ctx.srcdir}/index.${ext}`)),
+
+    // `index.{format}.{ext}`
+    ...exts.map(async (ext) => checkExists(`index.${ctx.format}.${ext}`)),
+
+    // `index.{ext}`
+    ...exts.map(async (ext) => checkExists(`index.${ext}`)),
   ]);
 
-  const entrypoint = checks.find(Boolean);
+  const resolvedEntryPoint = checks.find(Boolean);
 
-  if (!entrypoint && !isOptional) {
-    Logger.bundle.error('Could not resolve entrypoint.');
+  if (!resolvedEntryPoint && !isOptional) {
+    Logger.bundle.error('Could not resolve entry-point.');
     await shutdown(1);
   }
 
-  if (entrypoint) {
-    entrypointCache.set(key, entrypoint);
+  if (resolvedEntryPoint) {
+    entryPointCache.set(key, resolvedEntryPoint);
   }
 
-  return entrypoint || undefined;
+  return resolvedEntryPoint || undefined;
 }
 
 /**

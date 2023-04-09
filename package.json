@@ -48,7 +48,7 @@
     "eslint-plugin-react-hooks": "~4.3.0",
     "fast-glob": "~3.2.12",
     "find-up": "~5.0.0",
-    "flik": "0.6.1",
+    "flik": "0.6.2",
     "gzip-size": "~6.0.0",
     "is-ci": "~3.0.1",
     "is-unicode-supported": "~1.1.0",

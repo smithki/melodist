@@ -1,8 +1,8 @@
 import fs from 'fs';
 
-export async function checkFileExists(file: string) {
+export async function checkFileExists(filepath: string) {
   return fs.promises
-    .access(file, fs.constants.F_OK)
+    .access(filepath, fs.constants.F_OK)
     .then(() => true)
     .catch(() => false);
 }
