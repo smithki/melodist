@@ -80,13 +80,13 @@ your_project/
   // CDN entrypoint
   "jsdelivr": "./.melodist/iife/index.js",
 
-  // You can also define a standard NodeJS
+  // You should also define a standard NodeJS
   // "exports" field, for maximum compatibility
   "exports": {
     // ES modules output (using `.mjs` extension)
     "import": "./.melodist/esm/index.mjs",
     // CommonJS output (for redundancy)
-    // (this should be in-sync with package.json#main)
+    // (this should remain in-sync with package.json#main)
     "require": "./.melodist/cjs/index.js"
   }
 }
@@ -94,12 +94,22 @@ your_project/
 
 ### Entrypoints
 
-By default, `[srcdir]/index.{ts,tsx}` and/or `[srcdir]/index.css` is resolved as a starting point for bundling. However, each delivery format (**CommonJS modules**, **ES modules**, **IIFE modules**, and **React Native**) can define its own entrypoint using a filename identifier.
+By default, `[srcdir]/index.{ext}` is resolved as a starting point for bundling. Values for `{ext}` can be one of:
 
-- **CommonJS**: `index.cjs.{ts,tsx,css}`
-- **ES**: `index.esm.{ts,tsx,css}`
-- **IIFE**: `index.iife.{ts,tsx,css}`
-- **React Native**: `index.rn.{ts,tsx,css}`
+- TypeScript: `ts` or `tsx`
+- JavaScript: `js` or `jsx`
+- CSS: `css`
+
+A JavaScript and/or TypeScript entry-point is required for each bundle. CSS is optional.
+
+If `[srcdir]` isn't found, or if an entry-point fails to resolve relative to `[srcdir]`, then `index.{ext}` will be resolved at the project root relative to your `package.json`.
+
+For greater flexibility, each delivery format (**CommonJS modules**, **ES modules**, **IIFE modules**, and **React Native**) can define its own entrypoint using a filename identifier.
+
+- **CommonJS**: `index.cjs.{ext}`
+- **ES**: `index.esm.{ext}`
+- **IIFE**: `index.iife.{ext}`
+- **React Native**: `index.rn.{ext}`
 
 ### Defining external dependencies
 
@@ -121,7 +131,7 @@ For **IIFE** bundles, globals can be defined separately using `--global:iife` fl
 
 `melodist dev` serves a hot-reloading development server.
 
-Both commands accept the same arguments and flags:
+Both commands accept the same positional arguments and flags:
 
 ```
 USAGE
