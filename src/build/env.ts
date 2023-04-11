@@ -83,6 +83,5 @@ export function defineEnv(env: Record<string, string | undefined> = {}): Record<
       (entries, [key, value]) => entries.concat(createDefinition(`env.${key}`, JSON.stringify(value))),
       [] as DefinitionEntry,
     ),
-    ...createDefinition(`env`, JSON.stringify(env)),
   ]);
 }
