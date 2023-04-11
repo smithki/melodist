@@ -56,11 +56,11 @@ export async function resolveEntryPoint(
 }
 
 /**
- * Get a formatted, destination outfile.
+ * Get a formatted, destination directory for output.
  */
 export async function resolveOutDir(ctx: MelodistContext) {
   const projectRoot = await getProjectRoot(ctx.srcdir);
-  return path.join(projectRoot, ctx.outdir, ctx.format);
+  return path.join(projectRoot, ctx.outdir);
 }
 
 /**

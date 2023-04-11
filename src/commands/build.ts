@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import type { Format, Platform } from 'esbuild';
 import { createCommand, Inputs } from 'flik';
+import path from 'path';
 import { bundle } from '../build/bundle';
 import { loadEnv } from '../build/env';
 import { sayHello } from '../utils/logger';
@@ -200,7 +201,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
       return bundle({
         watch,
         srcdir: data.srcdir,
-        outdir: resolveFormatSpecificBuildOption('outdir', format, data),
+        outdir: resolveFormatSpecificOutdir(format, data),
         platform: resolveFormatSpecificPlatform(format, data),
         external: resolveFormatSpecificBuildOption('external', format, data),
         global: resolveFormatSpecificBuildOption('global', format, data),
@@ -241,6 +242,27 @@ function resolveFormatSpecificBuildOption<Key extends keyof BuildOptions>(
 
     default:
       return data[key];
+  }
+}
+
+function resolveFormatSpecificOutdir(format: FormatFlag, data: BuildOptions): string {
+  const defaultOutdir = path.join(data.outdir, format);
+
+  switch (format) {
+    case 'iife':
+      return resolveFormatSpecificBuildOption('outdir', 'iife', data) ?? defaultOutdir;
+
+    case 'cjs':
+      return resolveFormatSpecificBuildOption('outdir', 'cjs', data) ?? defaultOutdir;
+
+    case 'esm':
+      return resolveFormatSpecificBuildOption('outdir', 'esm', data) ?? defaultOutdir;
+
+    case 'rn':
+      return resolveFormatSpecificBuildOption('outdir', 'rn', data) ?? defaultOutdir;
+
+    default:
+      return defaultOutdir;
   }
 }
 
