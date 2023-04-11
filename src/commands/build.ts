@@ -250,19 +250,19 @@ function resolveFormatSpecificOutdir(format: FormatFlag, data: BuildOptions): st
 
   switch (format) {
     case 'iife':
-      return resolveFormatSpecificBuildOption('outdir', 'iife', data) ?? defaultOutdir;
+      return data[`outdir:iife`] ?? defaultOutdir;
 
     case 'cjs':
-      return resolveFormatSpecificBuildOption('outdir', 'cjs', data) ?? defaultOutdir;
+      return data[`outdir:cjs`] ?? defaultOutdir;
 
     case 'esm':
-      return resolveFormatSpecificBuildOption('outdir', 'esm', data) ?? defaultOutdir;
+      return data[`outdir:esm`] ?? defaultOutdir;
 
     case 'rn':
-      return resolveFormatSpecificBuildOption('outdir', 'rn', data) ?? defaultOutdir;
+      return data[`outdir:rn`] ?? defaultOutdir;
 
     default:
-      return defaultOutdir;
+      throw defaultOutdir;
   }
 }
 
