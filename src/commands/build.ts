@@ -105,7 +105,6 @@ export const flags: Inputs.FlagCollection<BuildOptions> = {
   env: {
     type: String,
     description: 'ENV file from which to load environment data.',
-    default: '.env',
   },
 
   tsconfig: {
@@ -143,7 +142,6 @@ export default createCommand(
     command: 'build',
     description: 'Build command',
     inputs: { flags, positionalArgs },
-    examples: ['test one two three'],
   },
 
   async ({ data, shutdown, addShutdownTask }) => {

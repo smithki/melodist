@@ -1,20 +1,24 @@
 import chalk from 'chalk';
-import { parse as parseDotenvFile, DotenvParseOutput } from 'dotenv';
+import { parse as dotenv, DotenvParseOutput } from 'dotenv';
 import { DotenvExpandOptions, expand } from 'dotenv-expand';
 import { shutdown } from 'flik';
 import fs from 'fs';
 import path from 'path';
 import { checkFileExists } from '../utils/check-file-exists';
 import { Logger } from '../utils/logger';
+import { getProjectRoot } from './resolvers';
 
-async function dotenv(filepath: string): Promise<Record<string, string | undefined>> {
+/**
+ * Parses a `.env` file and interpolates variables using `dotenv-expand`.
+ */
+async function parseEnv(filepath: string): Promise<Record<string, string | undefined>> {
   const origEnv = { ...process.env };
   const parsed: DotenvParseOutput = {};
 
   try {
     let result: DotenvExpandOptions = { ignoreProcessEnv: false };
     const envFileContents = await fs.promises.readFile(filepath, 'utf8');
-    result.parsed = parseDotenvFile(envFileContents);
+    result.parsed = dotenv(envFileContents);
 
     result = expand(result);
 
@@ -37,17 +41,17 @@ async function dotenv(filepath: string): Promise<Record<string, string | undefin
  */
 export async function loadEnv(env?: string): Promise<Record<string, string | undefined>> {
   if (env != null) {
-    const filepath = path.resolve(process.cwd(), env);
+    const filepath = path.resolve(await getProjectRoot(), env);
 
-    if (!(await checkFileExists(filepath))) {
-      Logger.env.warn(chalk`Skipped environment (file doesn't exist: {cyan ${env}})`);
-      return {};
+    if (await checkFileExists(filepath)) {
+      return parseEnv(filepath).then((result) => {
+        Logger.env.success(chalk`Loaded environment (from: {cyan ${env}})`);
+        return result;
+      });
     }
 
-    return dotenv(filepath).then((result) => {
-      Logger.env.success(chalk`Loaded environment (from: {cyan ${env}})`);
-      return result;
-    });
+    Logger.env.warn(chalk`Skipped environment (file doesn't exist: {cyan ${env}})`);
+    return {};
   }
 
   return {};

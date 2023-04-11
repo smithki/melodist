@@ -1,4 +1,4 @@
-import { getPackageJson } from '../utils/get-package-json';
+import { getPackageJson } from './resolvers';
 
 /**
  * Infer default bundle externals based on the consumer `package.json`.

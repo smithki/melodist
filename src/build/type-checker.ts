@@ -1,7 +1,7 @@
 import { Project } from 'ts-morph';
 import { Logger as FlikLogger } from 'flik';
 import path from 'path';
-import { getProjectRoot } from '../utils/get-project-root';
+import { getProjectRoot } from './resolvers';
 import { createWatcher } from '../utils/watcher';
 import { MelodistContext } from './types';
 import { Logger } from '../utils/logger';
