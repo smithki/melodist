@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import type { Platform } from 'esbuild';
+import type { Format, Platform } from 'esbuild';
 import { createCommand, Inputs } from 'flik';
 import { bundle } from '../build/bundle';
 import { loadEnv } from '../build/env';
@@ -7,6 +7,10 @@ import { sayHello } from '../utils/logger';
 
 export interface BuildOptions extends Inputs.FlagData {
   outdir: string;
+  'outdir:iife'?: string;
+  'outdir:cjs'?: string;
+  'outdir:esm'?: string;
+  'outdir:rn'?: string;
   format: Array<'iife' | 'cjs' | 'esm' | 'rn'>;
   esTarget: string;
   platform: Platform;
@@ -28,6 +32,34 @@ export const flags: Inputs.FlagCollection<BuildOptions> = {
     description: 'Directory where output shall be placed.',
     alias: 'o',
     default: '.melodist',
+  },
+
+  'outdir:iife': {
+    type: String,
+    description: chalk`Directory where output shall be placed {underline if --format=iife is in use}.`,
+    alias: 'o:iife',
+    defaultDescriptor: 'falls back to --outdir',
+  },
+
+  'outdir:cjs': {
+    type: String,
+    description: chalk`Directory where output shall be placed {underline if --format=cjs is in use}.`,
+    alias: 'o:cjs',
+    defaultDescriptor: 'falls back to --outdir',
+  },
+
+  'outdir:esm': {
+    type: String,
+    description: chalk`Directory where output shall be placed {underline if --format=esm is in use}.`,
+    alias: 'o:esm',
+    defaultDescriptor: 'falls back to --outdir',
+  },
+
+  'outdir:rn': {
+    type: String,
+    description: chalk`Directory where output shall be placed {underline if --format=rn is in use}.`,
+    alias: 'o:rn',
+    defaultDescriptor: 'falls back to --outdir',
   },
 
   format: {
@@ -168,21 +200,89 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
       return bundle({
         watch,
         srcdir: data.srcdir,
-        outdir: data.outdir,
-        platform: format === 'iife' ? 'browser' : format === 'rn' ? 'node' : data.platform,
-        external: format === 'iife' ? data['external:iife'] ?? data.external : data.external,
-        global: data.global,
+        outdir: resolveFormatSpecificBuildOption('outdir', format, data),
+        platform: resolveFormatSpecificPlatform(format, data),
+        external: resolveFormatSpecificBuildOption('external', format, data),
+        global: resolveFormatSpecificBuildOption('global', format, data),
         name: data.name,
         sourcemap: data.sourcemap,
         tsconfig: data.tsconfig,
         typecheck: data.typecheck && i === 0,
         esTarget: data.esTarget,
         minify: data.minify,
-        format: format === 'rn' ? 'cjs' : format,
-        mainFields: format === 'rn' ? ['react-native', 'main', 'module'] : undefined,
-        css: format !== 'rn',
+        format: resolveOutputModuleFormat(format),
+        mainFields: resolveFormatSpecificMainFields(format),
+        css: doesSupportCSS(format),
         define,
       });
     }),
   );
+}
+
+type FormatFlag = BuildOptions['format'][number];
+
+function resolveFormatSpecificBuildOption<Key extends keyof BuildOptions>(
+  key: Key,
+  format: FormatFlag,
+  data: BuildOptions,
+): BuildOptions[Key] {
+  switch (format) {
+    case 'iife':
+      return data[`${key}:iife`] ?? data[key];
+
+    case 'cjs':
+      return data[`${key}:cjs`] ?? data[key];
+
+    case 'esm':
+      return data[`${key}:esm`] ?? data[key];
+
+    case 'rn':
+      return data[`${key}:rn`] ?? data[key];
+
+    default:
+      return data[key];
+  }
+}
+
+function resolveFormatSpecificPlatform(format: FormatFlag, data: BuildOptions): Platform {
+  switch (format) {
+    case 'iife':
+      return 'browser';
+
+    case 'rn':
+      return 'node';
+
+    default:
+      return data.platform;
+  }
+}
+
+function resolveOutputModuleFormat(format: FormatFlag): Format {
+  switch (format) {
+    case 'rn':
+      return 'cjs';
+
+    default:
+      return format;
+  }
+}
+
+function resolveFormatSpecificMainFields(format: FormatFlag) {
+  switch (format) {
+    case 'rn':
+      return ['react-native', 'main', 'module'];
+
+    default:
+      return undefined; // fall back to ESBuild default
+  }
+}
+
+function doesSupportCSS(format: FormatFlag) {
+  switch (format) {
+    case 'rn':
+      return false;
+
+    default:
+      return true;
+  }
 }
