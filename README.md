@@ -146,6 +146,21 @@ OPTIONS
 
 --outdir, -o       Directory where output shall be placed. Default: ".melodist"
 
+--outdir:iife,     Directory where output shall be placed if --format=iife is in
+-o:iife            use. Default: falls back to --outdir
+
+--outdir:cjs,      Directory where output shall be placed if --format=cjs is in use.
+-o:cjs             Default: falls back to --outdir
+
+--outdir:esm,      Directory where output shall be placed if --format=esm is in use.
+-o:esm             Default: falls back to --outdir
+
+--outdir:rn,       Directory where output shall be placed if --format=rn is in use.
+-o:rn              Default: falls back to --outdir
+
+--outdir:types,    Directory where generated type definitions shall be placed.
+-o:types           Default: falls back to --outdir
+
 --format, -f       A list of output formats that should be produced. Default:
                    ["cjs", "esm"]
 
@@ -163,15 +178,15 @@ OPTIONS
 --global, -g       Dependencies transpiled to global variables (i.e.: --global
                    react=React).
 
---global:iife,     Dependencies transpiled to global variables if --format=iife
--g:iife            is in use (i.e.: --global:iife react=React). Default: falls
-                   back to --global
+--global:iife,     Dependencies transpiled to global variables if --format=iife is
+-g:iife            in use (i.e.: --global:iife react=React). Default: falls back to
+                   --global
 
 --name             A global variable name to use if --format=iife is in use.
 
 --(no-)sourcemap   Generate sourcemaps. Default: true
 
---env              ENV file from which to load environment data. Default: ".env"
+--env              ENV file from which to load environment data.
 
 --tsconfig         TSConfig file from which to load TypeScript configuration.
                    Default: "tsconfig.json"

@@ -5,27 +5,41 @@ import stripAnsi from 'strip-ansi';
 import isCI from 'is-ci';
 import isUnicodeSupported from 'is-unicode-supported';
 
-export const logSymbols = isUnicodeSupported()
-  ? {
-      info: 'ℹ',
-      wait: '◌',
-      complete: '◉',
-      success: '✔',
-      warning: '⚠',
-      error: '✖',
-      arrow: '➜',
-    }
-  : {
-      info: 'i',
-      wait: '□',
-      complete: '■',
-      success: '√',
-      warning: '‼',
-      error: '×',
-      arrow: '->',
-    };
+export const Logger = {
+  env: createLogger('env', chalk.cyan),
+  bundle: createLogger('bundle', chalk.blueBright),
+  typeCheck: createLogger('type-check', chalk.magenta),
+};
+
+export function sayHello(cmd: string) {
+  console.log(chalk`🎹 ${getLogSymbols().arrow} {cyan.italic ${cmd}}`);
+  FlikLogger.visualSeparator();
+}
+
+function getLogSymbols() {
+  return isUnicodeSupported()
+    ? {
+        info: 'ℹ',
+        wait: '◌',
+        complete: '◉',
+        success: '✔',
+        warning: '⚠',
+        error: '✖',
+        arrow: '➜',
+      }
+    : {
+        info: 'i',
+        wait: '□',
+        complete: '■',
+        success: '√',
+        warning: '‼',
+        error: '×',
+        arrow: '->',
+      };
+}
 
 function createLogger(label: string, withLabelColor: chalk.Chalk) {
+  const logSymbols = getLogSymbols();
   const colorfulLabel = withLabelColor(label);
   const colorfulArrow = chalk.dim(logSymbols.arrow);
 
@@ -61,42 +75,13 @@ function createRow(label: string, message: string) {
   const labelLength = stripAnsi(label).length + 1;
 
   const table = new Table({
-    chars: {
-      top: '',
-      'top-mid': '',
-      'top-left': '',
-      'top-right': '',
-      bottom: '',
-      'bottom-mid': '',
-      'bottom-left': '',
-      'bottom-right': '',
-      left: '',
-      'left-mid': '',
-      mid: '',
-      'mid-mid': '',
-      right: '',
-      'right-mid': '',
-      middle: '',
-    },
-    style: {
-      'padding-left': 0,
-      'padding-right': 1,
-    },
+    // eslint-disable-next-line prettier/prettier
+    chars: { top: "", "top-mid": "", "top-left": "", "top-right": "", bottom: "", "bottom-mid": "", "bottom-left": "", "bottom-right": "", left: "", "left-mid": "", mid: "", "mid-mid": "", right: "", "right-mid": "", middle: "" },
+    style: { 'padding-left': 0, 'padding-right': 1 },
     colWidths: [labelLength, process.stdout.columns - labelLength],
     wordWrap: true,
   });
 
   table.push([label, message]);
-  return table.toString();
-}
-
-export const Logger = {
-  env: createLogger('env', chalk.cyan),
-  bundle: createLogger('bundle', chalk.blueBright),
-  typeCheck: createLogger('type-check', chalk.magenta),
-};
-
-export function sayHello(cmd: string) {
-  console.log(chalk`🎹 ${logSymbols.arrow} {cyan.italic ${cmd}}`);
-  FlikLogger.visualSeparator();
+  return table.toString().trim();
 }
