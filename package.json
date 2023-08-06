@@ -21,7 +21,7 @@
     "@parcel/watcher": "2.1.0",
     "esbuild": "0.17.12",
     "lightningcss": "~1.19.0",
-    "ts-morph": "17.0.1"
+    "ts-morph": "19.0.0"
   },
   "devDependencies": {
     "@ikscodes/eslint-config": "~7.0.2",

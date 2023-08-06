@@ -12,6 +12,7 @@ export interface BuildOptions extends Inputs.FlagData {
   'outdir:cjs'?: string;
   'outdir:esm'?: string;
   'outdir:rn'?: string;
+  'outdir:types'?: string;
   format: Array<'iife' | 'cjs' | 'esm' | 'rn'>;
   esTarget: string;
   platform: Platform;
@@ -60,6 +61,13 @@ export const flags: Inputs.FlagCollection<BuildOptions> = {
     type: String,
     description: chalk`Directory where output shall be placed {underline if --format=rn is in use}.`,
     alias: 'o:rn',
+    defaultDescriptor: 'falls back to --outdir',
+  },
+
+  'outdir:types': {
+    type: String,
+    description: chalk`Directory where generated type definitions shall be placed.`,
+    alias: 'o:types',
     defaultDescriptor: 'falls back to --outdir',
   },
 
@@ -202,6 +210,7 @@ export async function build(options: { data: BuildOptions & BuildArgs; watch?: b
         watch,
         srcdir: data.srcdir,
         outdir: resolveFormatSpecificOutdir(format, data),
+        typesdir: data[`outdir:types`] ?? `${data.outdir}/types`,
         platform: resolveFormatSpecificPlatform(format, data),
         external: resolveFormatSpecificBuildOption('external', format, data),
         global: resolveFormatSpecificBuildOption('global', format, data),

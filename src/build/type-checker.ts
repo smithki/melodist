@@ -18,7 +18,7 @@ export async function createTypeChecker(ctx: MelodistContext) {
     compilerOptions: {
       declaration: true,
       emitDeclarationOnly: true,
-      declarationDir: `${ctx.outdir}/types`,
+      declarationDir: ctx.typesdir,
     },
     tsConfigFilePath: ctx.tsconfig,
   });

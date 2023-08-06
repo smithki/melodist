@@ -8,6 +8,7 @@ export interface MelodistContext {
   sourcemap?: boolean;
   srcdir: string;
   outdir: string;
+  typesdir: string;
   global: string[];
   define: Record<string, any>;
   name?: string;
