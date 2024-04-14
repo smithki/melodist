@@ -1,14 +1,15 @@
 import { Logger as FlikLogger } from 'flik';
 import chalk from 'chalk';
-import Table from 'cli-table3';
 import stripAnsi from 'strip-ansi';
 import isCI from 'is-ci';
 import isUnicodeSupported from 'is-unicode-supported';
+import wrapAnsi from 'wrap-ansi';
 
 export const Logger = {
   env: createLogger('env', chalk.cyan),
   bundle: createLogger('bundle', chalk.blueBright),
   typeCheck: createLogger('type-check', chalk.magenta),
+  formatGroup: formatLogGroup,
 };
 
 export function sayHello(cmd: string) {
@@ -45,43 +46,51 @@ function createLogger(label: string, withLabelColor: chalk.Chalk) {
 
   return {
     info: (message: string) => {
-      console.log(createRow(chalk`{cyan ${logSymbols.info}}  ${colorfulLabel} ${colorfulArrow}`, message));
+      console.log(formatLog(chalk`{cyan ${logSymbols.info}}  ${colorfulLabel} ${colorfulArrow}`, message));
     },
 
     wait: (message: string) => {
-      console.log(createRow(chalk`${withLabelColor(logSymbols.wait)}  ${colorfulLabel} ${colorfulArrow}`, message));
+      console.log(formatLog(chalk`${withLabelColor(logSymbols.wait)}  ${colorfulLabel} ${colorfulArrow}`, message));
     },
 
     complete: (message: string) => {
-      console.log(createRow(chalk`${withLabelColor(logSymbols.complete)}  ${colorfulLabel} ${colorfulArrow}`, message));
+      console.log(formatLog(chalk`${withLabelColor(logSymbols.complete)}  ${colorfulLabel} ${colorfulArrow}`, message));
     },
 
     warn: (message: string) => {
-      console.warn(createRow(chalk`{yellow ${logSymbols.warning}}  ${colorfulLabel} ${colorfulArrow}`, message));
+      console.warn(formatLog(chalk`{yellow ${logSymbols.warning}}  ${colorfulLabel} ${colorfulArrow}`, message));
     },
 
     success: (message: string) => {
-      console.log(createRow(chalk`{green ${logSymbols.success}}  ${colorfulLabel} ${colorfulArrow}`, message));
+      console.log(formatLog(chalk`{green ${logSymbols.success}}  ${colorfulLabel} ${colorfulArrow}`, message));
     },
 
     error: (message: string) => {
-      console.error(createRow(chalk`{red ${logSymbols.error}}  ${colorfulLabel} ${colorfulArrow}`, message));
+      console.error(formatLog(chalk`{red ${logSymbols.error}}  ${colorfulLabel} ${colorfulArrow}`, message));
     },
   };
 }
 
-function createRow(label: string, message: string) {
-  if (isCI || !process.stdout.isTTY) return `${label} ${message}`;
+function formatLog(label: string, message: string) {
+  if (isCI || !process.stdout.isTTY) {
+    return `${label} ${message}`;
+  }
+
   const labelLength = stripAnsi(label).length + 1;
+  const wrappedMessage = wrapAnsi(message, process.stdout.columns - labelLength);
+  const [firstLine, ...rest] = wrappedMessage.split('\n');
+  return [`${label} ${firstLine}`, ...rest.map((line) => `${' '.repeat(labelLength)}${line}`)].join('\n');
+}
 
-  const table = new Table({
-    // eslint-disable-next-line prettier/prettier
-    chars: { top: "", "top-mid": "", "top-left": "", "top-right": "", bottom: "", "bottom-mid": "", "bottom-left": "", "bottom-right": "", left: "", "left-mid": "", mid: "", "mid-mid": "", right: "", "right-mid": "", middle: "" },
-    style: { 'padding-left': 0, 'padding-right': 1 },
-    colWidths: [labelLength, process.stdout.columns - labelLength],
-    wordWrap: true,
-  });
+function formatLogGroup(label: string, message: string) {
+  if (isCI || !process.stdout.isTTY) {
+    const prefixedLines = message.split('\n').map((line) => `│ ${line.trim()}`);
+    return [`╭─ ${label}`, ...prefixedLines, '╰─'].join('\n').trim();
+  }
 
-  table.push([label, message]);
-  return table.toString().trim();
+  const wrappedLines = message
+    .split('\n')
+    .flatMap((line) => wrapAnsi(line, process.stdout.columns - 2, { trim: false }).split('\n'))
+    .map((line) => `│ ${line.trim()}`);
+  return [`╭─ ${label}`, ...wrappedLines, '╰─'].join('\n').trim();
 }

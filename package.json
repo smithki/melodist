@@ -35,7 +35,6 @@
     "brotli-size": "~4.0.0",
     "browserslist": "~4.20.0",
     "chalk": "~4.1.0",
-    "cli-table3": "~0.6.1",
     "decamelize": "~6.0.0",
     "dotenv": "~16.0.0",
     "dotenv-expand": "~8.0.3",

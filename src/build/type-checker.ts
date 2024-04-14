@@ -1,6 +1,7 @@
 import { Project } from 'ts-morph';
 import { Logger as FlikLogger } from 'flik';
 import path from 'path';
+import chalk from 'chalk';
 import { getProjectRoot } from './resolvers';
 import { createWatcher } from '../utils/watcher';
 import { MelodistContext } from './types';
@@ -61,7 +62,9 @@ async function runTypeScriptDiagnostics(project: Project) {
   if (diagnostics.length) {
     Logger.typeCheck.error('Found type errors:');
     FlikLogger.visualSeparator();
-    console.error(project.formatDiagnosticsWithColorAndContext(diagnostics));
+    console.error(
+      Logger.formatGroup(chalk.red('type errors'), project.formatDiagnosticsWithColorAndContext(diagnostics).trim()),
+    );
     FlikLogger.visualSeparator();
   } else {
     Logger.typeCheck.complete('No type errors found.');

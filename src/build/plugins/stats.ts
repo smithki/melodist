@@ -65,10 +65,8 @@ async function getSizeInfo(code: string) {
 async function reportErrors(ctx: MelodistContext, errors: Message[]) {
   Logger.bundle.error(chalk`{red Build failed} ({cyan ${ctx.format}})`);
   FlikLogger.visualSeparator();
-  errors.forEach((err) => {
-    console.error(formatError(err));
-    FlikLogger.visualSeparator();
-  });
+  const concatenatedErrors = Logger.formatGroup(chalk.red('compilation errors'), errors.map(formatError).join('\n'));
+  console.error(concatenatedErrors);
   FlikLogger.visualSeparator();
 }
 
